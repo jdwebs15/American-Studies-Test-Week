@@ -1,0 +1,1224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Day 1 Segment 2 — American Studies OST Practice</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .topbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+    .topbar .pill{background:#0b1220;border:1px solid var(--line);color:#dbeafe}
+    .back-link{
+      display:inline-flex;align-items:center;gap:8px;
+      margin-bottom:14px;color:#cbd5e1;text-decoration:none;font-weight:700;
+    }
+    .game-panel{
+      background:rgba(17,24,39,.95);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:20px;
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+    }
+    .question-stem{font-size:1.18rem;line-height:1.5;margin-bottom:14px;font-weight:700}
+    .question-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+    .question-meta .chip{font-size:.82rem}
+    .choices{display:grid;gap:10px}
+    .choice-btn{
+      width:100%;text-align:left;background:#0b1220;color:var(--text);
+      border:1px solid var(--line);border-radius:14px;padding:14px 14px;
+      font-size:1rem;cursor:pointer;transition:transform .12s ease,border-color .12s ease,background .12s ease;
+    }
+    .choice-btn:hover{transform:translateY(-1px);border-color:#60a5fa}
+    .choice-btn.selected{border-color:#38bdf8;background:#0f2440}
+    .choice-btn.correct{border-color:#22c55e;background:rgba(34,197,94,.16)}
+    .choice-btn.incorrect{border-color:#ef4444;background:rgba(239,68,68,.16)}
+    .prompt-box{
+      background:#0b1220;border:1px solid var(--line);border-radius:14px;
+      padding:14px;margin-bottom:14px;line-height:1.55;color:#e2e8f0;
+    }
+    .passage{
+      background:#0b1220;border:1px solid var(--line);border-radius:14px;
+      padding:16px;margin-bottom:14px;line-height:1.6;color:#dbeafe;white-space:pre-line;
+    }
+    .inline-label{display:block;font-weight:800;margin-bottom:6px;color:#cbd5e1}
+    select, .fake-drop, input[type="text"]{
+      width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);
+      background:#0b1220;color:var(--text);font-size:1rem;margin-bottom:12px;
+    }
+    .multi-note{color:var(--muted);font-size:.95rem;margin-bottom:10px}
+    .feedback{
+      margin-top:14px;padding:14px;border-radius:14px;border:1px solid var(--line);
+      background:#0b1220;color:#e5e7eb;line-height:1.55;display:none;
+    }
+    .feedback.show{display:block}
+    .feedback.good{border-color:#22c55e;background:rgba(34,197,94,.12)}
+    .feedback.bad{border-color:#ef4444;background:rgba(239,68,68,.12)}
+    .controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+    .btn-lite{
+      display:inline-flex;align-items:center;justify-content:center;
+      min-height:46px;padding:12px 16px;border-radius:14px;
+      border:1px solid var(--line);background:#0b1220;color:#e2e8f0;
+      font-weight:800;cursor:pointer;
+    }
+    .btn-lite:disabled{opacity:.45;cursor:not-allowed}
+    .ticket{
+      background:#0b1220;border:1px solid var(--line);border-radius:16px;
+      padding:18px;line-height:1.7;
+    }
+    .danger{background:#3b0d14 !important;border-color:#7f1d1d !important;color:#fecaca !important}
+    .tiny{font-size:.9rem;color:var(--muted)}
+    .progress-wrap{
+      width:100%;height:14px;border-radius:999px;overflow:hidden;
+      background:#0b1220;border:1px solid var(--line);margin-top:12px;
+    }
+    .progress-bar{
+      height:100%;width:0%;
+      background:linear-gradient(90deg,#38bdf8,#22c55e);
+      transition:width .2s ease;
+    }
+    .matching-grid{display:grid;gap:12px}
+    .match-row{
+      background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px;
+    }
+    .submit-top{margin-left:auto}
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app"></div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxs-3yj0_p8rPFP3H3a3E8vv6YXBH6U3ssNs_Wv5JM_Zm_8XwmBwrtaDNpBUfyjKmauOg/exec";
+const TEST_NAME = "Day 1 Segment 2";
+const DAY_LABEL = "Day 1";
+const SEGMENT_LABEL = "Segment 2";
+const TOTAL_QUESTIONS = 30;
+const STORAGE_KEY = "AMHIST_D1S2_STATE_V1";
+
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
+function formatDateTime(d){
+  return new Date(d).toLocaleString();
+}
+function formatRuntime(sec){
+  const s = Math.max(0, Math.floor(sec || 0));
+  const h = Math.floor(s / 3600).toString().padStart(2,"0");
+  const m = Math.floor((s % 3600) / 60).toString().padStart(2,"0");
+  const r = Math.floor(s % 60).toString().padStart(2,"0");
+  return `${h}:${m}:${r}`;
+}
+function hash32(str){
+  let h = 2166136261;
+  for(let i=0;i<str.length;i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function mulberry32(a){
+  return function(){
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffleSeeded(arr, seedStr){
+  const a = [...arr];
+  const rand = mulberry32(hash32(seedStr));
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(rand() * (i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function percent(n, d){
+  return d ? Math.round((n/d)*100) : 0;
+}
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    studentName: state.studentName,
+    startedAt: state.startedAt,
+    currentIndex: state.currentIndex,
+    answers: state.answers,
+    completed: state.completed,
+    questionOrder: state.questionOrder,
+    submitted: state.submitted
+  }));
+}
+function clearState(){ localStorage.removeItem(STORAGE_KEY); }
+function hardRestart(){
+  clearState();
+  location.href = location.pathname + "?r=" + Date.now();
+}
+
+const BANK = [
+  {
+    id:"D1S2-Q01",
+    type:"passage-mcq",
+    cs:"CS 1",
+    efl:"Analyze and evaluate the credibility of primary and secondary sources.",
+    contentElaboration:"perspective, bias, corroboration, author purpose",
+    passage:`Source A: A factory owner writes in 1902 that conditions in his mills are fair and that workers are treated well.
+Source B: A settlement house report from the same city describes long hours, crowded housing, and dangerous conditions faced by many laborers.
+Source C: An investigation by a state labor commission confirms frequent injuries and child labor in several mills.`,
+    stem:"A historian wants the strongest conclusion about working conditions in the city. Which use of the sources is best?",
+    choices:[
+      "Rely mainly on Source A because business owners know factories best",
+      "Ignore Source A because biased sources are never useful",
+      "Compare all three sources and weigh Source A against corroborating evidence from Sources B and C",
+      "Use only the most emotional source because it is more persuasive"
+    ],
+    answer:2,
+    explain:"The best historical method is to compare sources, account for bias, and use corroboration."
+  },
+  {
+    id:"D1S2-Q02",
+    type:"partab",
+    cs:"CS 2",
+    efl:"Develop a thesis and use evidence to support or refute a position.",
+    contentElaboration:"meaningful thesis tied to evidence",
+    passage:`A student is writing an essay on whether the Northwest Ordinance helped shape the future United States.`,
+    partA:{
+      stem:"Part A: Which thesis is strongest?",
+      choices:[
+        "The Northwest Ordinance was adopted in 1787.",
+        "The Northwest Ordinance was important because it established precedents for statehood, public education, and civil liberties in new territories.",
+        "Westward expansion happened over many years.",
+        "The Northwest Territory covered land north of the Ohio River."
+      ],
+      answer:1
+    },
+    partB:{
+      stem:"Part B: Which evidence best supports that thesis?",
+      choices:[
+        "It encouraged schools, protected certain liberties, and outlined how territories could become states",
+        "It was written before the Bill of Rights",
+        "It affected people who lived in the West",
+        "It showed that Congress could write laws"
+      ],
+      answer:0
+    },
+    explain:"A strong thesis makes an argument, and the best evidence directly supports each part of that claim."
+  },
+  {
+    id:"D1S2-Q03",
+    type:"mcq",
+    cs:"CS 3",
+    efl:"Analyze cause, effect, sequence, and correlation in historical events.",
+    contentElaboration:"multiple causation and long-/short-term causes",
+    stem:"Which statement best distinguishes a long-term cause from a short-term cause of the Great Migration?",
+    choices:[
+      "Demand for labor in northern factories was long-term, while Jim Crow laws were short-term",
+      "Jim Crow laws were a long-term push factor, while industrial job demand in the North acted as a short-term pull factor",
+      "Both Jim Crow laws and industrial jobs were short-term causes only",
+      "Neither one can be described using cause-and-effect analysis"
+    ],
+    answer:1,
+    explain:"The curriculum specifically frames Jim Crow as a long-term factor and northern labor demand as a short-term factor."
+  },
+  {
+    id:"D1S2-Q04",
+    type:"dropdown",
+    cs:"CS 3",
+    efl:"Analyze sequence and effect in historical developments.",
+    contentElaboration:"relationship between events",
+    stem:"Select the best completion.",
+    prompt:"Mechanized farming reduced the need for farm labor. As a result, many Americans moved to cities seeking jobs. This relationship is best described as",
+    options:[
+      "an effect following a cause",
+      "a coincidence with no relationship",
+      "a rejection of industrialization",
+      "an example of hereditary government"
+    ],
+    answer:"an effect following a cause",
+    explain:"Mechanized farming is the cause; migration to cities is one of its effects."
+  },
+  {
+    id:"D1S2-Q05",
+    type:"partab",
+    cs:"CS 4",
+    efl:"Explain unalienable rights and consent of the people in the Declaration of Independence.",
+    contentElaboration:"role of government, consent, grievances",
+    passage:`"That to secure these rights, Governments are instituted among Men, deriving their just powers from the consent of the governed..."`,
+    partA:{
+      stem:"Part A: What is the main purpose of government according to the excerpt?",
+      choices:[
+        "To increase trade between regions",
+        "To secure the rights of the people",
+        "To guarantee power for monarchs",
+        "To prevent all political disagreement"
+      ],
+      answer:1
+    },
+    partB:{
+      stem:"Part B: Which later action by Americans would best reflect the same principle?",
+      choices:[
+        "Supporting taxation without representation",
+        "Defending the idea that government must answer to the people",
+        "Arguing that rights come only from legislatures",
+        "Supporting unlimited executive authority"
+      ],
+      answer:1
+    },
+    explain:"The Declaration ties legitimate government to protecting rights and receiving power from the governed."
+  },
+  {
+    id:"D1S2-Q06",
+    type:"mcq",
+    cs:"CS 4",
+    efl:"Explain unalienable rights as they apply to rights and the changing role of government.",
+    contentElaboration:"government responsibility to protect rights",
+    stem:"The list of grievances in the Declaration of Independence was most intended to prove that",
+    choices:[
+      "colonists wanted Parliament to pass more taxes",
+      "government had violated the rights it was supposed to protect",
+      "the king had supported equality of rights",
+      "independence would eliminate all future conflict"
+    ],
+    answer:1,
+    explain:"The grievances are evidence that the government failed to protect rights."
+  },
+  {
+    id:"D1S2-Q07",
+    type:"multiselect",
+    cs:"CS 5",
+    efl:"Explain the precedents for governing the United States established by the Northwest Ordinance.",
+    contentElaboration:"public education, civil liberties, statehood, republican government, slavery prohibition",
+    stem:"Which two provisions of the Northwest Ordinance became important precedents for later U.S. development? Select two.",
+    choices:[
+      "Encouragement of public education",
+      "Creation of a hereditary governor",
+      "Protection of certain civil liberties",
+      "National establishment of one religion"
+    ],
+    answers:[0,2],
+    explain:"The ordinance encouraged education and protected liberties, both major precedents."
+  },
+  {
+    id:"D1S2-Q08",
+    type:"matching",
+    cs:"CS 5",
+    efl:"Explain precedents established by the Northwest Ordinance.",
+    contentElaboration:"statehood, republican government, prohibition of slavery",
+    stem:"Match each Northwest Ordinance provision to its historical significance.",
+    left:[
+      "Territories could become states",
+      "Slavery prohibited in the territory",
+      "Republican state governments required"
+    ],
+    right:[
+      "Set a model for future statehood",
+      "Established a precedent later echoed in national debates over expansion",
+      "Linked new governments to representative republican principles"
+    ],
+    answers:[0,1,2],
+    explain:"These pairings capture the ordinance’s biggest long-term precedents."
+  },
+  {
+    id:"D1S2-Q09",
+    type:"passage-mcq",
+    cs:"CS 6",
+    efl:"Explain how the U.S. Constitution establishes a limited government that protects rights.",
+    contentElaboration:"separation of powers, federalism, limited government",
+    passage:`A civics student writes:
+"The Constitution divided authority among branches and between the national and state governments so that no single part of government would hold all power."`,
+    stem:"Which constitutional principle is the student describing most directly?",
+    choices:[
+      "Mercantilism",
+      "Limited government through separated and divided powers",
+      "Direct democracy without representation",
+      "Military rule during peacetime"
+    ],
+    answer:1,
+    explain:"The Constitution limits power by dividing it across branches and levels of government."
+  },
+  {
+    id:"D1S2-Q10",
+    type:"mcq",
+    cs:"CS 6",
+    efl:"Explain the relationship between the people and government under the Constitution.",
+    contentElaboration:"consent of the people, representation, rights",
+    stem:"Which example best shows how the Constitution defines the relationship between the people and their government?",
+    choices:[
+      "Government gains authority in part through elected representatives",
+      "Citizens have no role in shaping government",
+      "States may abolish all federal elections",
+      "Rights may be removed whenever leaders prefer"
+    ],
+    answer:0,
+    explain:"The Constitution connects government to representation and consent."
+  },
+  {
+    id:"D1S2-Q11",
+    type:"partab",
+    cs:"CS 7",
+    efl:"Compare Federalist and Anti-Federalist arguments and explain how debate led to the Bill of Rights.",
+    contentElaboration:"strong central government vs. liberty concerns",
+    passage:`Excerpt from a ratification debate:
+"The proposed Constitution may create a government too far removed from the people. Without explicit protections, individual liberties could be endangered."`,
+    partA:{
+      stem:"Part A: Which group would most likely agree with this argument?",
+      choices:[
+        "Federalists",
+        "Anti-Federalists",
+        "Abolitionists",
+        "Progressives"
+      ],
+      answer:1
+    },
+    partB:{
+      stem:"Part B: Which outcome most directly responded to that concern?",
+      choices:[
+        "Creation of the Federal Reserve",
+        "Adoption of the Bill of Rights",
+        "Passage of the Homestead Act",
+        "Ratification of the 18th Amendment"
+      ],
+      answer:1
+    },
+    explain:"Anti-Federalist fears about liberty helped produce the Bill of Rights."
+  },
+  {
+    id:"D1S2-Q12",
+    type:"mcq",
+    cs:"CS 7",
+    efl:"Compare Federalist and Anti-Federalist arguments.",
+    contentElaboration:"national taxation, standing army, strong central government, checks and balances",
+    stem:"Which argument would most likely have been made by a Federalist?",
+    choices:[
+      "A strong national government is dangerous because it lacks a bill of rights",
+      "The national government needs taxation and defense powers in order to govern effectively",
+      "State governments should remain clearly stronger than the national government in all cases",
+      "A standing army should always be forbidden"
+    ],
+    answer:1,
+    explain:"Federalists argued that the national government needed sufficient power to function."
+  },
+  {
+    id:"D1S2-Q13",
+    type:"passage-mcq",
+    cs:"CS 8",
+    efl:"Analyze how industrialization transformed the economy.",
+    contentElaboration:"shift from agrarian to industrial society",
+    passage:`A chart shows that from 1870 to 1910:
+- the percentage of agricultural workers declined,
+- the percentage of factory workers rose,
+- urban populations increased steadily.`,
+    stem:"Which conclusion is best supported by the chart?",
+    choices:[
+      "The United States became increasingly industrial and urban",
+      "Most Americans returned from cities to farms",
+      "Industrialization ended demand for all labor",
+      "Urbanization reduced the importance of transportation"
+    ],
+    answer:0,
+    explain:"The pattern shows the economy shifting from agriculture toward industry and city life."
+  },
+  {
+    id:"D1S2-Q14",
+    type:"mcq",
+    cs:"CS 8",
+    efl:"Analyze how mechanized farming transformed the American economy.",
+    contentElaboration:"increased efficiency, reduced labor needs",
+    stem:"Why did mechanized farming help accelerate urbanization in the late 1800s?",
+    choices:[
+      "It increased the need for farm laborers",
+      "It pushed many workers to seek jobs in industrial centers",
+      "It reduced agricultural output and created food shortages",
+      "It forced all immigrants to settle in rural regions"
+    ],
+    answer:1,
+    explain:"More efficient farming reduced labor needs, which helped push people toward city jobs."
+  },
+  {
+    id:"D1S2-Q15",
+    type:"multiselect",
+    cs:"CS 8",
+    efl:"Analyze effects of industrialization and technological innovation.",
+    contentElaboration:"assembly line, mass production, urban living, unskilled labor",
+    stem:"Which two developments were major consequences of industrialization according to the curriculum? Select two.",
+    choices:[
+      "Mass production expanded through the assembly line",
+      "The workforce shifted toward factory labor",
+      "Cities became less crowded over time",
+      "Skilled labor replaced machine production in most industries"
+    ],
+    answers:[0,1],
+    explain:"Industrialization expanded assembly-line production and shifted labor toward factories."
+  },
+  {
+    id:"D1S2-Q16",
+    type:"mcq",
+    cs:"CS 1",
+    efl:"Analyze and evaluate credibility of sources.",
+    contentElaboration:"reliability, consistency, qualifications",
+    stem:"A source is written by an eyewitness, but several claims in it conflict with verified records. Which conclusion is best?",
+    choices:[
+      "It must be completely accurate because it is a primary source",
+      "It is useless because historians never use flawed sources",
+      "It may still be useful, but historians should question its reliability and compare it with other evidence",
+      "It should automatically be trusted over every secondary source"
+    ],
+    answer:2,
+    explain:"Primary sources can be valuable and still require evaluation for reliability."
+  },
+  {
+    id:"D1S2-Q17",
+    type:"dropdown",
+    cs:"CS 2",
+    efl:"Use evidence to support or refute a position.",
+    contentElaboration:"supporting a historical claim with best evidence",
+    stem:"Select the strongest supporting evidence.",
+    prompt:"Claim: Urbanization created serious public-health challenges for many working families.",
+    options:[
+      "A map of the Louisiana Purchase",
+      "Photographs and reports describing overcrowding, poor sanitation, and disease in tenements",
+      "A speech praising westward settlement",
+      "A list of presidents from 1789 to 1860"
+    ],
+    answer:"Photographs and reports describing overcrowding, poor sanitation, and disease in tenements",
+    explain:"That evidence directly supports the claim about urban public-health problems."
+  },
+  {
+    id:"D1S2-Q18",
+    type:"passage-mcq",
+    cs:"CS 3",
+    efl:"Analyze sequence and multiple causation.",
+    contentElaboration:"cause/effect sequence",
+    passage:`Sequence:
+1. New machinery made agricultural work more efficient.
+2. Fewer laborers were needed on farms.
+3. More people moved to cities.
+4. Industrial labor supplies increased.`,
+    stem:"Which statement best explains the sequence?",
+    choices:[
+      "Urbanization was one effect of mechanized farming",
+      "Mechanized farming ended industrialization",
+      "City growth caused the invention of farm machines",
+      "The steps show unrelated events"
+    ],
+    answer:0,
+    explain:"The sequence shows rural mechanization helping produce urban migration and a larger industrial workforce."
+  },
+  {
+    id:"D1S2-Q19",
+    type:"partab",
+    cs:"CS 4",
+    efl:"Explain Declaration principles in context.",
+    contentElaboration:"equality of rights, changing role of government",
+    passage:`A reformer argues in 1848 that women, like men, possess natural rights that government must respect.`,
+    partA:{
+      stem:"Part A: Which founding-document principle does the reformer most directly invoke?",
+      choices:[
+        "Unalienable rights",
+        "Judicial review",
+        "Protective tariffs",
+        "Manifest destiny"
+      ],
+      answer:0
+    },
+    partB:{
+      stem:"Part B: Why is that argument connected to the Declaration of Independence?",
+      choices:[
+        "The Declaration argues that rights belong only to officeholders",
+        "The Declaration links rights to government’s duty to protect them",
+        "The Declaration rejects the idea of equality",
+        "The Declaration was written mainly to support industrialization"
+      ],
+      answer:1
+    },
+    explain:"This applies the Declaration’s ideals beyond 1776 by focusing on rights and government’s duty to protect them."
+  },
+  {
+    id:"D1S2-Q20",
+    type:"mcq",
+    cs:"CS 5",
+    efl:"Explain precedents established by the Northwest Ordinance.",
+    contentElaboration:"territorial governance and eventual statehood",
+    stem:"Why was the Northwest Ordinance important to the development of the United States?",
+    choices:[
+      "It created the first national bank",
+      "It established a model for governing territories and admitting new states",
+      "It ended all conflict over western lands",
+      "It abolished the Constitution"
+    ],
+    answer:1,
+    explain:"Its long-term significance was the model it created for territorial governance and statehood."
+  },
+  {
+    id:"D1S2-Q21",
+    type:"mcq",
+    cs:"CS 6",
+    efl:"Explain how the Constitution establishes limited government that protects rights.",
+    contentElaboration:"federalism and separation of powers",
+    stem:"A governor says, “The national government has some powers, but the states also keep powers of their own.” This statement reflects",
+    choices:[
+      "federalism",
+      "mercantilism",
+      "judicial activism",
+      "laissez-faire capitalism"
+    ],
+    answer:0,
+    explain:"Federalism divides power between national and state governments."
+  },
+  {
+    id:"D1S2-Q22",
+    type:"multiselect",
+    cs:"CS 7",
+    efl:"Compare Federalist and Anti-Federalist positions.",
+    contentElaboration:"Anti-Federalist concerns",
+    stem:"Which two concerns were emphasized most by Anti-Federalists? Select two.",
+    choices:[
+      "A standing army could threaten liberty",
+      "National taxation could become oppressive",
+      "The central government needed more unchecked power",
+      "State governments should be eliminated"
+    ],
+    answers:[0,1],
+    explain:"Those concerns were central Anti-Federalist warnings during ratification."
+  },
+  {
+    id:"D1S2-Q23",
+    type:"matching",
+    cs:"CS 7",
+    efl:"Explain how debate led to the Bill of Rights.",
+    contentElaboration:"specific liberties protected",
+    stem:"Match each Anti-Federalist concern to the Bill of Rights response most closely connected to it.",
+    left:[
+      "Government might punish political criticism",
+      "Government might search homes without proper limits",
+      "Government might deny fair legal protections"
+    ],
+    right:[
+      "Speech and press protections",
+      "Protection against unreasonable searches",
+      "Due process guarantees"
+    ],
+    answers:[0,1,2],
+    explain:"The Bill of Rights directly addressed many Anti-Federalist concerns about liberty."
+  },
+  {
+    id:"D1S2-Q24",
+    type:"mcq",
+    cs:"CS 8",
+    efl:"Analyze technological innovations that transformed the economy.",
+    contentElaboration:"telephone, skyscraper, light bulb, automobile, airplane",
+    stem:"Which pair best shows one communication innovation and one transportation innovation from industrialization?",
+    choices:[
+      "telephone and automobile",
+      "skyscraper and trial by jury",
+      "light bulb and federalism",
+      "Bill of Rights and airplane"
+    ],
+    answer:0,
+    explain:"The telephone changed communication; the automobile changed transportation."
+  },
+  {
+    id:"D1S2-Q25",
+    type:"passage-mcq",
+    cs:"CS 8",
+    efl:"Analyze consequences of industrial transformation.",
+    contentElaboration:"urban overcrowding and unsanitary conditions",
+    passage:`An 1895 city report describes apartment buildings packed with families, overflowing trash, poor sewer systems, and the spread of disease in crowded neighborhoods.`,
+    stem:"The conditions in the report are best understood as a consequence of",
+    choices:[
+      "urbanization linked to industrial growth",
+      "the decline of factory work",
+      "the rise of suburban commuting after World War II",
+      "the end of immigration to cities"
+    ],
+    answer:0,
+    explain:"The report describes overcrowding and sanitation problems associated with rapid urbanization."
+  },
+  {
+    id:"D1S2-Q26",
+    type:"mcq",
+    cs:"CS 3",
+    efl:"Analyze cause and effect.",
+    contentElaboration:"correlation vs causation",
+    stem:"A student says, “Cities grew during industrialization, so every city problem must have been caused only by factories.” Which response is best?",
+    choices:[
+      "The student is correct because one event always has only one cause",
+      "The student ignores multiple causation and oversimplifies historical change",
+      "The student is wrong because industrialization had no effect on city life",
+      "The student proves that correlation and causation are identical"
+    ],
+    answer:1,
+    explain:"Historical developments usually involve multiple causes, not one single factor."
+  },
+  {
+    id:"D1S2-Q27",
+    type:"dropdown",
+    cs:"CS 1",
+    efl:"Analyze and evaluate source credibility.",
+    contentElaboration:"author qualifications and reputation",
+    stem:"Complete the statement.",
+    prompt:"A historian would be more likely to trust a source when the author",
+    options:[
+      "uses larger print",
+      "has relevant expertise and a reputation for accuracy",
+      "agrees with the historian’s personal opinion",
+      "writes with dramatic emotional language only"
+    ],
+    answer:"has relevant expertise and a reputation for accuracy",
+    explain:"Qualifications and reputation are important measures of credibility."
+  },
+  {
+    id:"D1S2-Q28",
+    type:"mcq",
+    cs:"CS 2",
+    efl:"Develop a thesis and use evidence to support or refute a position.",
+    contentElaboration:"evidence significance in larger context",
+    stem:"Which statement best explains why historians use evidence from multiple sources rather than relying on only one source?",
+    choices:[
+      "Because longer essays need more footnotes",
+      "Because comparing sources helps refine explanations and test whether claims hold up",
+      "Because one source can never contain factual information",
+      "Because primary sources are always inferior to secondary sources"
+    ],
+    answer:1,
+    explain:"Historians refine explanations by comparing and analyzing evidence from various sources."
+  },
+  {
+    id:"D1S2-Q29",
+    type:"partab",
+    cs:"CS 6",
+    efl:"Explain constitutional government and protection of liberties.",
+    contentElaboration:"limiting power and protecting rights",
+    passage:`A newspaper editorial states:
+"The new government must be strong enough to act, but not so strong that it can easily take away the people's liberties."`,
+    partA:{
+      stem:"Part A: Which constitutional idea best addresses that concern?",
+      choices:[
+        "Limited government",
+        "Unlimited executive power",
+        "Rule by aristocracy",
+        "Suspension of elections"
+      ],
+      answer:0
+    },
+    partB:{
+      stem:"Part B: Which constitutional feature best helps achieve that goal?",
+      choices:[
+        "Separation of powers",
+        "Abolition of state governments",
+        "Permanent emergency rule",
+        "Elimination of representation"
+      ],
+      answer:0
+    },
+    explain:"Limited government is supported by structural checks like separation of powers."
+  },
+  {
+    id:"D1S2-Q30",
+    type:"passage-mcq",
+    cs:"CS 8",
+    efl:"Analyze how industrialization transformed the economy and society.",
+    contentElaboration:"factory labor, unskilled labor, mass production",
+    passage:`A historian writes:
+"The assembly line increased output dramatically, but it also changed the nature of work by breaking production into small repetitive tasks."`,
+    stem:"Which conclusion is most supported by the passage?",
+    choices:[
+      "Mass production helped shift some work from skilled labor toward more repetitive factory labor",
+      "Assembly lines reduced industrial production",
+      "Factories depended less on machinery over time",
+      "Industrialization returned most Americans to small family farms"
+    ],
+    answer:0,
+    explain:"The passage highlights both higher output and the move toward repetitive, less-skilled labor roles."
+  }
+];
+
+const state = {
+  studentName: "",
+  startedAt: null,
+  currentIndex: 0,
+  answers: {},
+  completed: false,
+  submitted: false,
+  questionOrder: [],
+  ticker: null
+};
+
+function buildQuestionOrder(name, startedAt){
+  return shuffleSeeded(BANK.map(q => q.id), `${name}|${startedAt}|${TEST_NAME}`);
+}
+function getQuestionById(id){ return BANK.find(q => q.id === id); }
+function getCurrentQuestion(){ return getQuestionById(state.questionOrder[state.currentIndex]); }
+function answeredCount(){ return Object.keys(state.answers).length; }
+function correctCount(){
+  return BANK.reduce((sum, q) => sum + ((state.answers[q.id] && state.answers[q.id].correct) ? 1 : 0), 0);
+}
+function accuracyPct(){ return percent(correctCount(), answeredCount()); }
+
+function render(){
+  const app = document.getElementById("app");
+  if(!state.studentName || !state.startedAt){
+    app.innerHTML = renderStart();
+    bindStart();
+    return;
+  }
+  if(state.completed){
+    app.innerHTML = renderComplete();
+    bindComplete();
+    return;
+  }
+  app.innerHTML = renderQuestion();
+  bindQuestion();
+}
+function renderStart(){
+  return `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+
+    <section class="hero">
+      <div class="kicker">LEGEND — AMERICAN STUDIES OST PRACTICE</div>
+      <h1>${TEST_NAME}</h1>
+      <p class="sub">
+        30 questions. Segment 2 emphasizes application, analysis, causation, comparison, and evidence interpretation.
+        Question types include MCQ, passage items, Part A/Part B, multi-select, dropdown, and matching.
+      </p>
+      <div class="pills">
+        <span class="pill">30 questions</span>
+        <span class="pill">Segment 2</span>
+        <span class="pill">Higher thinking</span>
+        <span class="pill">Apps Script connected</span>
+      </div>
+    </section>
+
+    <section class="game-panel">
+      <h2 style="margin-top:0;">Directions</h2>
+      <div class="prompt-box">
+        Enter your name to begin. Segment 2 uses more application and analysis than Segment 1.
+        Read each prompt carefully. Some questions require one answer, some require two selections,
+        and some use matching or Part A/Part B structures. When finished, click <strong>Submit Test</strong>.
+      </div>
+
+      <label class="inline-label" for="studentName">Student Name</label>
+      <input id="studentName" type="text" placeholder="Enter your name to begin" />
+
+      <div class="controls">
+        <button class="btn" id="beginBtn">Begin Test</button>
+        <a class="btn secondary" href="../index.html">Back to Hub</a>
+      </div>
+
+      <p class="tiny" style="margin-top:12px;">Progress in this browser will persist until you submit or restart.</p>
+    </section>
+  `;
+}
+function renderQuestion(){
+  const q = getCurrentQuestion();
+  const runtime = Math.floor((Date.now() - new Date(state.startedAt).getTime()) / 1000);
+  const answered = answeredCount();
+  const progress = percent(state.currentIndex, TOTAL_QUESTIONS);
+  const submitDisabled = answered === 0 ? "disabled" : "";
+
+  return `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+
+    <div class="topbar">
+      <span class="pill">Name: ${escapeHtml(state.studentName)}</span>
+      <span class="pill">Day: ${DAY_LABEL}</span>
+      <span class="pill">Segment: ${SEGMENT_LABEL}</span>
+      <span class="pill">Progress: ${Math.min(state.currentIndex + 1, TOTAL_QUESTIONS)} / ${TOTAL_QUESTIONS}</span>
+      <span class="pill">Answered: ${answered}</span>
+      <span class="pill">Accuracy: ${accuracyPct()}%</span>
+      <span class="pill">Runtime: <span id="runtimeText">${formatRuntime(runtime)}</span></span>
+      <button class="btn-lite submit-top" id="submitTopBtn" ${submitDisabled}>Submit Test</button>
+      <button class="btn-lite danger" id="restartTopBtn">Restart Test</button>
+    </div>
+
+    <section class="game-panel">
+      <div class="question-meta">
+        <span class="chip">${escapeHtml(q.cs)}</span>
+        <span class="chip">${escapeHtml(q.type)}</span>
+        <span class="chip">Question ${state.currentIndex + 1} of ${TOTAL_QUESTIONS}</span>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" style="width:${progress}%"></div>
+      </div>
+
+      ${renderQuestionBody(q)}
+
+      <div class="feedback" id="feedbackBox"></div>
+
+      <div class="controls">
+        <button class="btn" id="checkBtn">Check Answer</button>
+        <button class="btn-lite" id="nextBtn" disabled>Next</button>
+        <button class="btn-lite danger" id="restartBtn">Restart Test</button>
+      </div>
+    </section>
+  `;
+}
+function renderQuestionBody(q){
+  let html = `<div class="question-stem">${escapeHtml(q.stem)}</div>`;
+
+  if(q.passage){
+    html += `<div class="passage">${escapeHtml(q.passage)}</div>`;
+  }
+  if(q.prompt){
+    html += `<div class="prompt-box">${escapeHtml(q.prompt)}</div>`;
+  }
+
+  if(q.type === "mcq" || q.type === "passage-mcq"){
+    html += `<div class="choices">`;
+    q.choices.forEach((c, i) => {
+      html += `<button class="choice-btn" data-choice="${i}"><strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}</button>`;
+    });
+    html += `</div>`;
+  }
+
+  if(q.type === "multiselect"){
+    html += `<div class="multi-note">Select all correct answers, then click Check Answer.</div><div class="choices">`;
+    q.choices.forEach((c, i) => {
+      html += `<button class="choice-btn multi" data-choice="${i}"><strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}</button>`;
+    });
+    html += `</div>`;
+  }
+
+  if(q.type === "dropdown"){
+    html += `
+      <label class="inline-label" for="dropdownAnswer">Choose one answer</label>
+      <select id="dropdownAnswer">
+        <option value="">-- Select an answer --</option>
+        ${q.options.map(opt => `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}</option>`).join("")}
+      </select>
+    `;
+  }
+
+  if(q.type === "partab"){
+    html += `
+      <div class="prompt-box"><strong>${escapeHtml(q.partA.stem)}</strong></div>
+      <div class="choices">
+        ${q.partA.choices.map((c, i) => `
+          <button class="choice-btn partA" data-part="A" data-choice="${i}">
+            <strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}
+          </button>`).join("")}
+      </div>
+
+      <div class="prompt-box" style="margin-top:14px;"><strong>${escapeHtml(q.partB.stem)}</strong></div>
+      <div class="choices">
+        ${q.partB.choices.map((c, i) => `
+          <button class="choice-btn partB" data-part="B" data-choice="${i}">
+            <strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}
+          </button>`).join("")}
+      </div>
+    `;
+  }
+
+  if(q.type === "matching"){
+    html += `<div class="multi-note">Use the dropdowns to match each item.</div><div class="matching-grid">`;
+    q.left.forEach((leftText, idx) => {
+      html += `
+        <div class="match-row">
+          <div class="inline-label">${idx + 1}. ${escapeHtml(leftText)}</div>
+          <select class="match-select" data-index="${idx}">
+            <option value="">-- Match to result --</option>
+            ${q.right.map((r, ridx) => `<option value="${ridx}">${escapeHtml(r)}</option>`).join("")}
+          </select>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  return html;
+}
+function renderComplete(){
+  const started = new Date(state.startedAt);
+  const submitted = new Date();
+  const runtime = Math.floor((submitted.getTime() - started.getTime()) / 1000);
+  const score = correctCount();
+  const acc = percent(score, TOTAL_QUESTIONS);
+  const result = acc >= 80 ? "PASSING PRACTICE" : "RETEACH NEEDED";
+
+  return `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+
+    <section class="hero">
+      <div class="kicker">Submission Ticket</div>
+      <h1>${TEST_NAME} Complete</h1>
+      <p class="sub">Results have ${state.submitted ? "been submitted to the spreadsheet" : "not been submitted successfully yet"}.</p>
+    </section>
+
+    <section class="game-panel">
+      <div class="ticket">
+        <div><strong>Name:</strong> ${escapeHtml(state.studentName)}</div>
+        <div><strong>Date:</strong> ${new Date().toLocaleDateString()}</div>
+        <div><strong>Started:</strong> ${formatDateTime(started)}</div>
+        <div><strong>Submitted:</strong> ${formatDateTime(submitted)}</div>
+        <div><strong>Runtime:</strong> ${formatRuntime(runtime)}</div>
+        <div><strong>Score:</strong> ${score} / ${TOTAL_QUESTIONS}</div>
+        <div><strong>Accuracy:</strong> ${acc}%</div>
+        <div><strong>Result:</strong> ${result}</div>
+      </div>
+
+      <div class="controls">
+        <button class="btn-lite danger" id="restartAfterBtn">Restart Test</button>
+        <a class="btn secondary" href="../index.html">Back to Hub</a>
+      </div>
+    </section>
+  `;
+}
+
+function bindStart(){
+  document.getElementById("beginBtn").addEventListener("click", () => {
+    const name = document.getElementById("studentName").value.trim();
+    if(!name){
+      alert("Enter your name to begin.");
+      return;
+    }
+    state.studentName = name;
+    state.startedAt = new Date().toISOString();
+    state.currentIndex = 0;
+    state.answers = {};
+    state.completed = false;
+    state.submitted = false;
+    state.questionOrder = buildQuestionOrder(name, state.startedAt);
+    saveState();
+    render();
+    startTicker();
+  });
+}
+function bindComplete(){
+  document.getElementById("restartAfterBtn").addEventListener("click", hardRestart);
+}
+function bindQuestion(){
+  const q = getCurrentQuestion();
+
+  document.getElementById("restartTopBtn").addEventListener("click", hardRestart);
+  document.getElementById("restartBtn").addEventListener("click", hardRestart);
+
+  const submitTopBtn = document.getElementById("submitTopBtn");
+  if(submitTopBtn){
+    submitTopBtn.addEventListener("click", async () => {
+      if(answeredCount() === 0) return;
+      const ok = confirm("Submit the test now? Any unanswered questions will count as incorrect.");
+      if(!ok) return;
+      await finalizeSubmission();
+    });
+  }
+
+  if(q.type === "mcq" || q.type === "passage-mcq"){
+    document.querySelectorAll(".choice-btn[data-choice]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".choice-btn[data-choice]").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
+  }
+
+  if(q.type === "multiselect"){
+    document.querySelectorAll(".choice-btn.multi").forEach(btn => {
+      btn.addEventListener("click", () => btn.classList.toggle("selected"));
+    });
+  }
+
+  if(q.type === "partab"){
+    document.querySelectorAll(".choice-btn.partA").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".choice-btn.partA").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
+    document.querySelectorAll(".choice-btn.partB").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".choice-btn.partB").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
+  }
+
+  document.getElementById("checkBtn").addEventListener("click", () => handleCheck(q));
+  document.getElementById("nextBtn").addEventListener("click", async () => {
+    if(state.currentIndex < TOTAL_QUESTIONS - 1){
+      state.currentIndex++;
+      saveState();
+      render();
+    }else{
+      await finalizeSubmission();
+    }
+  });
+
+  startTicker();
+}
+
+function showFeedback(ok, html){
+  const box = document.getElementById("feedbackBox");
+  box.className = `feedback show ${ok ? "good" : "bad"}`;
+  box.innerHTML = html;
+}
+function lockQuestion(){
+  document.querySelectorAll(".choice-btn, select").forEach(el => el.disabled = true);
+  document.getElementById("checkBtn").disabled = true;
+  document.getElementById("nextBtn").disabled = false;
+}
+function markSingleChoices(correctIndex, selectedIndex){
+  document.querySelectorAll(".choice-btn[data-choice]").forEach(btn => {
+    const i = Number(btn.dataset.choice);
+    if(i === correctIndex) btn.classList.add("correct");
+    if(i === selectedIndex && i !== correctIndex) btn.classList.add("incorrect");
+  });
+}
+function arraysEqualUnordered(a,b){
+  if(a.length !== b.length) return false;
+  const sa = [...a].sort((x,y)=>x-y);
+  const sb = [...b].sort((x,y)=>x-y);
+  return sa.every((v,i)=>v===sb[i]);
+}
+function handleCheck(q){
+  let correct = false;
+  let responseData = null;
+
+  if(q.type === "mcq" || q.type === "passage-mcq"){
+    const selected = document.querySelector(".choice-btn.selected");
+    if(!selected){ alert("Choose an answer."); return; }
+    const idx = Number(selected.dataset.choice);
+    correct = idx === q.answer;
+    responseData = { selected: idx };
+    markSingleChoices(q.answer, idx);
+  }
+
+  if(q.type === "multiselect"){
+    const selected = [...document.querySelectorAll(".choice-btn.multi.selected")].map(b => Number(b.dataset.choice));
+    if(!selected.length){ alert("Select your answer choices."); return; }
+    correct = arraysEqualUnordered(selected, q.answers);
+    responseData = { selected };
+    document.querySelectorAll(".choice-btn.multi").forEach(btn => {
+      const i = Number(btn.dataset.choice);
+      if(q.answers.includes(i)) btn.classList.add("correct");
+      if(selected.includes(i) && !q.answers.includes(i)) btn.classList.add("incorrect");
+    });
+  }
+
+  if(q.type === "dropdown"){
+    const selected = document.getElementById("dropdownAnswer").value;
+    if(!selected){ alert("Choose an answer."); return; }
+    correct = selected === q.answer;
+    responseData = { selected };
+  }
+
+  if(q.type === "partab"){
+    const a = document.querySelector(".choice-btn.partA.selected");
+    const b = document.querySelector(".choice-btn.partB.selected");
+    if(!a || !b){ alert("Answer both Part A and Part B."); return; }
+    const aIdx = Number(a.dataset.choice);
+    const bIdx = Number(b.dataset.choice);
+    correct = aIdx === q.partA.answer && bIdx === q.partB.answer;
+    responseData = { partA:aIdx, partB:bIdx };
+
+    document.querySelectorAll(".choice-btn.partA").forEach(btn => {
+      const i = Number(btn.dataset.choice);
+      if(i === q.partA.answer) btn.classList.add("correct");
+      if(i === aIdx && i !== q.partA.answer) btn.classList.add("incorrect");
+    });
+    document.querySelectorAll(".choice-btn.partB").forEach(btn => {
+      const i = Number(btn.dataset.choice);
+      if(i === q.partB.answer) btn.classList.add("correct");
+      if(i === bIdx && i !== q.partB.answer) btn.classList.add("incorrect");
+    });
+  }
+
+  if(q.type === "matching"){
+    const selected = [...document.querySelectorAll(".match-select")].map(s => s.value === "" ? "" : Number(s.value));
+    if(selected.some(v => v === "")){ alert("Complete all matches."); return; }
+    correct = selected.every((v, i) => v === q.answers[i]);
+    responseData = { selected };
+  }
+
+  state.answers[q.id] = { correct, responseData };
+  saveState();
+
+  showFeedback(correct, `<strong>${correct ? "Correct." : "Incorrect."}</strong> ${escapeHtml(q.explain)}`);
+  lockQuestion();
+}
+
+function buildSubmissionPayload(){
+  const submittedAt = new Date().toISOString();
+  const runtimeSeconds = Math.floor((Date.now() - new Date(state.startedAt).getTime()) / 1000);
+  const questions = BANK.map(q => {
+    const rec = state.answers[q.id];
+    return {
+      id: q.id,
+      type: q.type,
+      cs: q.cs,
+      efl: q.efl,
+      contentElaboration: q.contentElaboration,
+      correct: !!(rec && rec.correct)
+    };
+  });
+  const score = correctCount();
+
+  return {
+    studentName: state.studentName,
+    testName: TEST_NAME,
+    day: DAY_LABEL,
+    segment: SEGMENT_LABEL,
+    startedAt: state.startedAt,
+    submittedAt,
+    runtimeSeconds,
+    score,
+    total: TOTAL_QUESTIONS,
+    accuracy: TOTAL_QUESTIONS ? score / TOTAL_QUESTIONS : 0,
+    questions
+  };
+}
+async function finalizeSubmission(){
+  state.completed = true;
+  try{
+    const payload = buildSubmissionPayload();
+    const res = await fetch(WEB_APP_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    state.submitted = !!data.ok;
+  }catch(err){
+    state.submitted = false;
+  }
+  saveState();
+  render();
+}
+
+function startTicker(){
+  if(state.ticker) clearInterval(state.ticker);
+  const runtimeNode = document.getElementById("runtimeText");
+  if(!runtimeNode) return;
+  state.ticker = setInterval(() => {
+    const sec = Math.floor((Date.now() - new Date(state.startedAt).getTime()) / 1000);
+    const node = document.getElementById("runtimeText");
+    if(node) node.textContent = formatRuntime(sec);
+  }, 1000);
+}
+function boot(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved){
+    try{
+      const parsed = JSON.parse(saved);
+      if(parsed && parsed.studentName && parsed.startedAt){
+        state.studentName = parsed.studentName;
+        state.startedAt = parsed.startedAt;
+        state.currentIndex = parsed.currentIndex || 0;
+        state.answers = parsed.answers || {};
+        state.completed = !!parsed.completed;
+        state.submitted = !!parsed.submitted;
+        state.questionOrder = Array.isArray(parsed.questionOrder) && parsed.questionOrder.length === TOTAL_QUESTIONS
+          ? parsed.questionOrder
+          : buildQuestionOrder(parsed.studentName, parsed.startedAt);
+      }
+    }catch(err){}
+  }
+  render();
+}
+window.addEventListener("pageshow", e => {
+  if(e.persisted) boot();
+});
+boot();
+</script>
+</body>
+</html>
