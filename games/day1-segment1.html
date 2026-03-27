@@ -3,6 +3,745 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>American Studies Test Shell</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <div class="wrap" id="app"></div>
+
+<script>
+/* =========================
+   CONFIG
+========================= */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxs-3yj0_p8rPFP3H3a3E8vv6YXBH6U3ssNs_Wv5JM_Zm_8XwmBwrtaDNpBUfyjKmauOg/exec";
+
+const TEST_META = {
+  subject: "American Studies",
+  week: "OST Practice Week",
+  day: "Day X",
+  segment: "Segment X",
+  title: "American Studies Test Week — Day X Segment X",
+  focus: "Recognition/Application"
+};
+
+const ATTEMPT_KEY = "AMSTUD_DX_SX_ATTEMPT_LOCK";
+const STORAGE_KEY = "LEGEND_AMSTUD_DX_SX_STATE_V1";
+const TEACHER_SECRET = "legend";
+const TEACHER_OVERRIDE = new URLSearchParams(location.search).get("unlock") === TEACHER_SECRET;
+
+/* =========================
+   QUESTION BANK
+   Supported types:
+   - mc
+   - multiselect
+   - dropdown
+   - partab
+   - matching
+========================= */
+const QUESTION_BANK = [
+  {
+    id:"AMSTUD_TEST_Q01",
+    cs:"CS 1",
+    type:"mc",
+    stem:"Sample question placeholder",
+    choices:["A","B","C","D"],
+    answer:[0]
+  }
+];
+
+/* =========================
+   SEEDED SHUFFLE / HELPERS
+========================= */
+function hash32(str){
+  let h = 2166136261 >>> 0;
+  for(let i = 0; i < str.length; i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function mulberry32(a){
+  return function(){
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffleArray(arr, seedStr){
+  const a = arr.slice();
+  const rand = mulberry32(hash32(seedStr));
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function shuffleIndices(length, seedStr){
+  const arr = Array.from({length}, (_, i) => i);
+  const rand = mulberry32(hash32(seedStr));
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(rand() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function cloneQuestion(q){
+  return JSON.parse(JSON.stringify(q));
+}
+
+function remapQuestion(q, seedStr){
+  const question = cloneQuestion(q);
+
+  if(question.type === "mc" || question.type === "multiselect"){
+    if(Array.isArray(question.choices) && question.choices.length > 1){
+      const order = shuffleIndices(question.choices.length, seedStr);
+      const inverseMap = {};
+      order.forEach((oldIdx, newIdx) => inverseMap[oldIdx] = newIdx);
+      question.choices = order.map(i => question.choices[i]);
+      question.answer = question.answer.map(oldIdx => inverseMap[oldIdx]).sort((a,b)=>a-b);
+      question._choiceOrder = order;
+    }
+  }
+
+  if(question.type === "partab"){
+    if(Array.isArray(question.partA?.choices) && question.partA.choices.length > 1){
+      const orderA = shuffleIndices(question.partA.choices.length, `${seedStr}|partA`);
+      const inverseA = {};
+      orderA.forEach((oldIdx, newIdx) => inverseA[oldIdx] = newIdx);
+      question.partA.choices = orderA.map(i => question.partA.choices[i]);
+      question.partA.answer = question.partA.answer.map(oldIdx => inverseA[oldIdx]).sort((a,b)=>a-b);
+    }
+    if(Array.isArray(question.partB?.choices) && question.partB.choices.length > 1){
+      const orderB = shuffleIndices(question.partB.choices.length, `${seedStr}|partB`);
+      const inverseB = {};
+      orderB.forEach((oldIdx, newIdx) => inverseB[oldIdx] = newIdx);
+      question.partB.choices = orderB.map(i => question.partB.choices[i]);
+      question.partB.answer = question.partB.answer.map(oldIdx => inverseB[oldIdx]).sort((a,b)=>a-b);
+    }
+  }
+
+  return question;
+}
+
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, s => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[s]));
+}
+function nowLocalString(d){
+  return new Date(d).toLocaleString();
+}
+function formatRuntime(seconds){
+  const total = Math.max(0, Math.floor(seconds));
+  const h = Math.floor(total / 3600).toString().padStart(2,"0");
+  const m = Math.floor((total % 3600) / 60).toString().padStart(2,"0");
+  const s = Math.floor(total % 60).toString().padStart(2,"0");
+  return `${h}:${m}:${s}`;
+}
+function letter(i){
+  return ["A","B","C","D","E","F"][i] || "";
+}
+function normalizeArray(arr){
+  return Array.isArray(arr) ? [...arr].sort((a,b)=>a-b) : [];
+}
+function sameArray(a,b){
+  const aa = normalizeArray(a);
+  const bb = normalizeArray(b);
+  return aa.length === bb.length && aa.every((v,i)=>v===bb[i]);
+}
+
+/* =========================
+   STATE
+========================= */
+let QUESTIONS = [];
+
+let state = {
+  studentName: "",
+  startedAt: null,
+  current: 0,
+  answers: [],
+  submitted: false,
+  score: null,
+  attemptNumber: 1,
+  questionOrderSeed: null
+};
+
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && !parsed.submitted){
+        state = parsed;
+      }
+    }
+  }catch(err){}
+}
+function isLocked(){
+  if(TEACHER_OVERRIDE) return false;
+  return localStorage.getItem(ATTEMPT_KEY) === "USED";
+}
+function teacherBadge(){
+  return TEACHER_OVERRIDE ? `<span class="pill">Teacher Override Active</span>` : ``;
+}
+function teacherUnlockNow(){
+  localStorage.removeItem(ATTEMPT_KEY);
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+function countAnswered(){
+  return state.answers.filter(a => a !== null).length;
+}
+function totalQuestions(){
+  return QUESTIONS.length;
+}
+function buildQuestions(){
+  const seed = state.questionOrderSeed || "default-seed";
+  QUESTIONS = QUESTION_BANK.map((q, idx) => remapQuestion(q, `${seed}|${q.id || idx}|choices`));
+  QUESTIONS = shuffleArray(QUESTIONS, `${seed}|question-order`);
+  if(!Array.isArray(state.answers) || state.answers.length !== QUESTIONS.length){
+    state.answers = Array(QUESTIONS.length).fill(null);
+  }
+}
+
+/* =========================
+   ANSWER CHECKING
+========================= */
+function isCorrect(q, answer){
+  if(q.type === "mc" || q.type === "multiselect"){
+    return sameArray(answer, q.answer);
+  }
+  if(q.type === "dropdown"){
+    return sameArray(answer, q.answer);
+  }
+  if(q.type === "matching"){
+    return sameArray(answer, q.answer);
+  }
+  if(q.type === "partab"){
+    if(!answer || !Array.isArray(answer.partA) || !Array.isArray(answer.partB)) return false;
+    return sameArray(answer.partA, q.partA.answer) && sameArray(answer.partB, q.partB.answer);
+  }
+  return false;
+}
+
+function currentAnswerLabel(q, ans){
+  if(ans === null) return "No answer";
+
+  if(q.type === "mc" || q.type === "multiselect" || q.type === "dropdown"){
+    return ans.map(i => letter(i)).join(", ");
+  }
+  if(q.type === "matching"){
+    return "Answered";
+  }
+  if(q.type === "partab"){
+    const a = (ans.partA || []).map(i => letter(i)).join(", ");
+    const b = (ans.partB || []).map(i => letter(i)).join(", ");
+    return `Part A: ${a || "-"} | Part B: ${b || "-"}`;
+  }
+  return "Answered";
+}
+
+/* =========================
+   RENDER
+========================= */
+function buildLockedScreen(){
+  document.getElementById("app").innerHTML = `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+    <div class="panel lock-box">
+      <div class="kicker">Attempt Locked</div>
+      <h1>${TEST_META.title}</h1>
+      <p class="sub">This segment has already been completed on this device/browser.</p>
+      <div class="footer-actions">
+        ${TEACHER_OVERRIDE ? `<button class="warn" onclick="teacherUnlockNow()">Teacher Unlock This Browser</button>` : ``}
+        <button onclick="location.href='../index.html'">Back to Hub</button>
+      </div>
+    </div>
+  `;
+}
+
+function buildIntro(){
+  document.getElementById("app").innerHTML = `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+    <div class="panel name-card">
+      <div class="kicker">Legend Mastery Series • American Studies</div>
+      <h1>${TEST_META.title}</h1>
+      <p class="sub">30-question OST-style segment. Name is required to begin. One attempt only.</p>
+      <input id="nameInput" class="input" type="text" maxlength="60" placeholder="Enter your name to begin" />
+      <div class="help">
+        This is a locked test shell. Questions and answer choices are shuffled for test realism. There is no student restart.
+      </div>
+      <div class="footer-actions">
+        ${TEACHER_OVERRIDE ? `<span class="tag">Teacher Override Active</span>` : ``}
+        <button id="startBtn">Start Test</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("startBtn").onclick = () => {
+    const name = document.getElementById("nameInput").value.trim();
+    if(!name){
+      alert("Enter your name to begin.");
+      return;
+    }
+    state.studentName = name;
+    state.startedAt = new Date().toISOString();
+    state.attemptNumber = 1;
+    state.questionOrderSeed = `${state.studentName}|${state.startedAt}|${TEST_META.title}`;
+    buildQuestions();
+    save();
+    renderTest();
+  };
+}
+
+function buildTopbar(){
+  const started = new Date(state.startedAt);
+  const runtime = formatRuntime((Date.now() - started.getTime()) / 1000);
+  const answered = countAnswered();
+  const progressPct = Math.round((answered / QUESTIONS.length) * 100);
+
+  return `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+    <div class="topbar">
+      <div class="topbar-left">
+        ${TEACHER_OVERRIDE ? `<button class="warn" onclick="teacherUnlockNow()">Teacher Unlock</button>` : ``}
+      </div>
+      <div class="topbar-right">
+        ${teacherBadge()}
+        <span class="pill">Name: ${escapeHtml(state.studentName)}</span>
+        <span class="pill">Attempt: ${state.attemptNumber}</span>
+        <span class="pill">Started: ${escapeHtml(nowLocalString(started))}</span>
+        <span class="pill">Runtime: <span id="runtimeDisplay">${runtime}</span></span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Test</div><div class="stat-value">${TEST_META.day} ${TEST_META.segment}</div></div>
+        <div class="stat"><div class="stat-label">Focus</div><div class="stat-value">${TEST_META.focus}</div></div>
+        <div class="stat"><div class="stat-label">Progress</div><div class="stat-value">${answered} / ${QUESTIONS.length}</div></div>
+        <div class="stat"><div class="stat-label">Completion</div><div class="stat-value">${progressPct}%</div></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${progressPct}%"></div></div>
+    </div>
+  `;
+}
+
+function renderQuestion(){
+  const q = QUESTIONS[state.current];
+  const currentAnswer = state.answers[state.current];
+
+  document.getElementById("app").innerHTML = buildTopbar() + `
+    <div class="panel question-card">
+      <div class="q-type">Question ${state.current + 1} of ${QUESTIONS.length} • ${escapeHtml(q.type.toUpperCase())} • ${escapeHtml(q.cs)}</div>
+      ${q.passage ? `<div class="passage">${escapeHtml(q.passage)}</div>` : ``}
+      ${q.prompt ? `<div class="prompt-box">${escapeHtml(q.prompt)}</div>` : ``}
+      <div class="q-stem">${escapeHtml(q.stem)}</div>
+      ${renderInputForQuestion(q, currentAnswer)}
+      <div class="footer-actions">
+        <button class="secondary" ${state.current === 0 ? "disabled" : ""} onclick="prevQuestion()">Previous</button>
+        <button class="secondary" onclick="skipQuestion()">Skip</button>
+        <button class="warn" onclick="reviewScreen()">Review / Submit</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderInputForQuestion(q, currentAnswer){
+  if(q.type === "mc"){
+    return `
+      <div class="choices">
+        ${q.choices.map((choice, i) => `
+          <button class="choice ${currentAnswer !== null && currentAnswer[0] === i ? "selected" : ""}" onclick="selectMc(${i})">
+            <span class="choice-letter">${letter(i)}.</span> ${escapeHtml(choice)}
+          </button>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  if(q.type === "multiselect"){
+    const selected = Array.isArray(currentAnswer) ? currentAnswer : [];
+    return `
+      <div class="help">Select all correct answers.</div>
+      <div class="choices">
+        ${q.choices.map((choice, i) => `
+          <button class="choice ${selected.includes(i) ? "selected" : ""}" onclick="toggleMulti(${i})">
+            <span class="choice-letter">${letter(i)}.</span> ${escapeHtml(choice)}
+          </button>
+        `).join("")}
+      </div>
+      <div class="footer-actions" style="margin-top:12px;">
+        <button onclick="commitMulti()">Save Answer</button>
+      </div>
+    `;
+  }
+
+  if(q.type === "dropdown"){
+    const selected = Array.isArray(currentAnswer) && currentAnswer.length ? currentAnswer[0] : "";
+    return `
+      <label class="inline-label" for="dropdownAnswer">Choose one answer</label>
+      <select id="dropdownAnswer" class="input">
+        <option value="">-- Select an answer --</option>
+        ${q.choices.map((choice, i) => `<option value="${i}" ${String(selected)===String(i) ? "selected" : ""}>${escapeHtml(choice)}</option>`).join("")}
+      </select>
+      <div class="footer-actions" style="margin-top:12px;">
+        <button onclick="commitDropdown()">Save Answer</button>
+      </div>
+    `;
+  }
+
+  if(q.type === "matching"){
+    const selected = Array.isArray(currentAnswer) ? currentAnswer : Array(q.left.length).fill("");
+    return `
+      <div class="matching-grid">
+        ${q.left.map((leftText, idx) => `
+          <div class="match-row">
+            <div class="inline-label">${idx + 1}. ${escapeHtml(leftText)}</div>
+            <select class="input" id="match_${idx}">
+              <option value="">-- Match --</option>
+              ${q.right.map((r, ridx) => `
+                <option value="${ridx}" ${String(selected[idx])===String(ridx) ? "selected" : ""}>${escapeHtml(r)}</option>
+              `).join("")}
+            </select>
+          </div>
+        `).join("")}
+      </div>
+      <div class="footer-actions" style="margin-top:12px;">
+        <button onclick="commitMatching()">Save Answer</button>
+      </div>
+    `;
+  }
+
+  if(q.type === "partab"){
+    const selectedA = currentAnswer?.partA || [];
+    const selectedB = currentAnswer?.partB || [];
+    return `
+      <div class="prompt-box"><strong>${escapeHtml(q.partA.stem)}</strong></div>
+      <div class="choices">
+        ${q.partA.choices.map((choice, i) => `
+          <button class="choice ${selectedA.includes(i) ? "selected" : ""}" onclick="selectPart('A', ${i})">
+            <span class="choice-letter">${letter(i)}.</span> ${escapeHtml(choice)}
+          </button>
+        `).join("")}
+      </div>
+
+      <div class="prompt-box" style="margin-top:14px;"><strong>${escapeHtml(q.partB.stem)}</strong></div>
+      <div class="choices">
+        ${q.partB.choices.map((choice, i) => `
+          <button class="choice ${selectedB.includes(i) ? "selected" : ""}" onclick="selectPart('B', ${i})">
+            <span class="choice-letter">${letter(i)}.</span> ${escapeHtml(choice)}
+          </button>
+        `).join("")}
+      </div>
+
+      <div class="footer-actions" style="margin-top:12px;">
+        <button onclick="commitPartAB()">Save Answer</button>
+      </div>
+    `;
+  }
+
+  return `<div class="help">Unsupported question type.</div>`;
+}
+
+function renderTest(){
+  if(state.current < 0) state.current = 0;
+  if(state.current >= QUESTIONS.length) state.current = QUESTIONS.length - 1;
+  renderQuestion();
+}
+
+/* =========================
+   ANSWER INTERACTION
+========================= */
+let multiWorking = [];
+let partWorking = { partA: [], partB: [] };
+
+function selectMc(i){
+  state.answers[state.current] = [i];
+  save();
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    reviewScreen();
+  }
+}
+
+function toggleMulti(i){
+  const current = Array.isArray(state.answers[state.current]) ? [...state.answers[state.current]] : [];
+  if(current.includes(i)){
+    state.answers[state.current] = current.filter(v => v !== i).sort((a,b)=>a-b);
+  }else{
+    state.answers[state.current] = [...current, i].sort((a,b)=>a-b);
+  }
+  save();
+  renderQuestion();
+}
+
+function commitMulti(){
+  if(!Array.isArray(state.answers[state.current]) || !state.answers[state.current].length){
+    alert("Select at least one answer.");
+    return;
+  }
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    reviewScreen();
+  }
+}
+
+function commitDropdown(){
+  const el = document.getElementById("dropdownAnswer");
+  if(!el || el.value === ""){
+    alert("Choose an answer.");
+    return;
+  }
+  state.answers[state.current] = [Number(el.value)];
+  save();
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    reviewScreen();
+  }
+}
+
+function commitMatching(){
+  const q = QUESTIONS[state.current];
+  const ans = [];
+  for(let i=0;i<q.left.length;i++){
+    const el = document.getElementById(`match_${i}`);
+    if(!el || el.value === ""){
+      alert("Complete all matches.");
+      return;
+    }
+    ans.push(Number(el.value));
+  }
+  state.answers[state.current] = ans;
+  save();
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    reviewScreen();
+  }
+}
+
+function selectPart(which, i){
+  const current = state.answers[state.current] || { partA: [], partB: [] };
+  const next = {
+    partA: [...(current.partA || [])],
+    partB: [...(current.partB || [])]
+  };
+  if(which === "A") next.partA = [i];
+  if(which === "B") next.partB = [i];
+  state.answers[state.current] = next;
+  save();
+  renderQuestion();
+}
+
+function commitPartAB(){
+  const current = state.answers[state.current];
+  if(!current || !Array.isArray(current.partA) || !current.partA.length || !Array.isArray(current.partB) || !current.partB.length){
+    alert("Answer both Part A and Part B.");
+    return;
+  }
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    reviewScreen();
+  }
+}
+
+function prevQuestion(){
+  if(state.current > 0){
+    state.current--;
+    save();
+    renderQuestion();
+  }
+}
+
+function skipQuestion(){
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    reviewScreen();
+  }
+}
+
+function jumpToQuestion(idx){
+  state.current = idx;
+  save();
+  renderQuestion();
+}
+
+/* =========================
+   REVIEW / SUBMIT
+========================= */
+function reviewScreen(){
+  const answered = countAnswered();
+  const unanswered = QUESTIONS.length - answered;
+
+  document.getElementById("app").innerHTML = buildTopbar() + `
+    <div class="panel">
+      <h2>Review Before Submitting</h2>
+      <p class="sub">Answered: ${answered} of ${QUESTIONS.length}. Unanswered: ${unanswered}.</p>
+      <div class="review-box">
+        ${QUESTIONS.map((q, idx) => `
+          <div class="review-item">
+            <div class="review-top">
+              <strong>Q${String(idx + 1).padStart(2,"0")}</strong>
+              <span class="tag">${escapeHtml(q.cs)}</span>
+            </div>
+            <div class="muted">${escapeHtml(q.stem)}</div>
+            <div style="margin-top:8px;">
+              ${state.answers[idx] === null
+                ? `<span class="tag">No answer</span>`
+                : `<span class="tag">Answered: ${escapeHtml(currentAnswerLabel(q, state.answers[idx]))}</span>`
+              }
+            </div>
+            <div class="footer-actions">
+              <button class="secondary" onclick="jumpToQuestion(${idx})">Go to Question</button>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+      <hr class="sep">
+      <div class="footer-actions">
+        <button class="secondary" onclick="renderQuestion()">Back to Test</button>
+        <button onclick="submitTest()">Submit Segment</button>
+      </div>
+    </div>
+  `;
+}
+
+async function submitTest(){
+  if(state.submitted) return;
+
+  const endedAt = new Date().toISOString();
+  const score = QUESTIONS.reduce((sum, q, idx) => sum + (isCorrect(q, state.answers[idx]) ? 1 : 0), 0);
+  const accuracy = Math.round((score / QUESTIONS.length) * 100);
+
+  const payload = {
+    studentName: state.studentName,
+    day: TEST_META.day,
+    segment: TEST_META.segment,
+    score,
+    total: QUESTIONS.length,
+    accuracy,
+    questions: QUESTIONS.map((q, idx) => ({
+      id: q.id,
+      cs: q.cs,
+      correct: isCorrect(q, state.answers[idx]) ? 1 : 0
+    }))
+  };
+
+  try{
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const text = await res.text();
+    let parsed = {};
+    try { parsed = JSON.parse(text); } catch(err) {}
+    if(parsed && parsed.ok === false){
+      alert(parsed.message || "Submission failed.");
+      return;
+    }
+  }catch(err){
+    alert("Submission did not reach the spreadsheet. Check the Apps Script URL and deployment settings, then try again.");
+    return;
+  }
+
+  if(!TEACHER_OVERRIDE){
+    localStorage.setItem(ATTEMPT_KEY, "USED");
+  }
+
+  state.submitted = true;
+  state.score = score;
+  save();
+
+  document.getElementById("app").innerHTML = `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+    <div class="panel">
+      <div class="kicker">Submission Complete</div>
+      <h1>${TEST_META.title}</h1>
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Name</div><div class="stat-value">${escapeHtml(state.studentName)}</div></div>
+        <div class="stat"><div class="stat-label">Attempt</div><div class="stat-value">${state.attemptNumber}</div></div>
+        <div class="stat"><div class="stat-label">Date</div><div class="stat-value">${escapeHtml(new Date(endedAt).toLocaleDateString())}</div></div>
+        <div class="stat"><div class="stat-label">Start</div><div class="stat-value">${escapeHtml(nowLocalString(state.startedAt))}</div></div>
+        <div class="stat"><div class="stat-label">End</div><div class="stat-value">${escapeHtml(nowLocalString(endedAt))}</div></div>
+        <div class="stat"><div class="stat-label">Runtime</div><div class="stat-value">${formatRuntime((new Date(endedAt) - new Date(state.startedAt)) / 1000)}</div></div>
+        <div class="stat"><div class="stat-label">Score</div><div class="stat-value">${score} / ${QUESTIONS.length}</div></div>
+        <div class="stat"><div class="stat-label">Accuracy</div><div class="stat-value">${accuracy}%</div></div>
+        <div class="stat"><div class="stat-label">Result</div><div class="stat-value ${accuracy >= 80 ? "result-ready" : "result-review"}">${accuracy >= 80 ? "READY" : "REVIEW"}</div></div>
+      </div>
+      <div class="footer-actions">
+        ${TEACHER_OVERRIDE ? `<button class="warn" onclick="teacherUnlockNow()">Teacher Unlock This Browser</button>` : ``}
+        <button onclick="location.href='../index.html'">Back to Hub</button>
+      </div>
+    </div>
+  `;
+
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+/* =========================
+   TICKER / BOOT
+========================= */
+function tick(){
+  const el = document.getElementById("runtimeDisplay");
+  if(el && state.startedAt){
+    el.textContent = formatRuntime((Date.now() - new Date(state.startedAt).getTime()) / 1000);
+  }
+}
+
+load();
+if(isLocked()){
+  buildLockedScreen();
+}else if(!state.studentName || !state.startedAt){
+  buildIntro();
+}else{
+  buildQuestions();
+  renderTest();
+}
+setInterval(tick, 1000);
+
+/* expose handlers */
+window.prevQuestion = prevQuestion;
+window.skipQuestion = skipQuestion;
+window.reviewScreen = reviewScreen;
+window.jumpToQuestion = jumpToQuestion;
+window.selectMc = selectMc;
+window.toggleMulti = toggleMulti;
+window.commitMulti = commitMulti;
+window.commitDropdown = commitDropdown;
+window.commitMatching = commitMatching;
+window.selectPart = selectPart;
+window.commitPartAB = commitPartAB;
+window.submitTest = submitTest;
+window.teacherUnlockNow = teacherUnlockNow;
+</script>
+</body>
+</html><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Day 1 Segment 1 — American Studies OST Practice</title>
   <link rel="stylesheet" href="../styles.css" />
   <style>
