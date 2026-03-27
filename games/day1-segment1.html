@@ -18,7 +18,7 @@
       --good:#4fd18b;
       --bad:#ff7b7b;
     }
-
+    
     *{box-sizing:border-box}
 
     html,body{
@@ -1389,19 +1389,22 @@ async function submitTest(){
   const score = QUESTIONS.reduce((sum, q, idx) => sum + (isCorrect(q, state.answers[idx]) ? 1 : 0), 0);
   const accuracy = Math.round((score / QUESTIONS.length) * 100);
 
-  const payload = {
-    studentName: state.studentName,
-    day: TEST_META.day,
-    segment: TEST_META.segment,
-    score,
-    total: QUESTIONS.length,
-    accuracy,
-    questions: QUESTIONS.map((q, idx) => ({
-      id: q.id,
-      cs: q.cs,
-      correct: isCorrect(q, state.answers[idx]) ? 1 : 0
-    }))
-  };
+ const payload = {
+  studentName: state.studentName,
+  day: TEST_META.day,
+  segment: TEST_META.segment,
+  score,
+  total: QUESTIONS.length,
+  accuracy,
+  questions: QUESTIONS.map((q, idx) => ({
+    id: q.id,
+    type: q.type,
+    cs: q.cs,
+    efl: q.efl || "",
+    contentElaboration: q.contentElaboration || "",
+    correct: isCorrect(q, state.answers[idx]) ? 1 : 0
+  }))
+};
 
   try{
     const res = await fetch(SCRIPT_URL, {
