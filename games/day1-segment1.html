@@ -38,14 +38,487 @@ const TEACHER_OVERRIDE = new URLSearchParams(location.search).get("unlock") === 
    - partab
    - matching
 ========================= */
-const QUESTION_BANK = [
+const BANK = [
   {
-    id:"AMSTUD_TEST_Q01",
+    id:"D1S1-Q01",
+    type:"mcq",
     cs:"CS 1",
-    type:"mc",
-    stem:"Sample question placeholder",
-    choices:["A","B","C","D"],
-    answer:[0]
+    efl:"Analyze and evaluate the credibility of primary and secondary sources.",
+    contentElaboration:"bias, perspective, corroboration",
+    stem:"Which factor would most weaken the credibility of a historical source?",
+    choices:[
+      "It includes exact dates",
+      "It contradicts reliable sources without explanation",
+      "It was written during the event",
+      "It contains direct quotations"
+    ],
+    answer:1,
+    explain:"A source that conflicts with reliable evidence and cannot be corroborated is less credible."
+  },
+  {
+    id:"D1S1-Q02",
+    type:"mcq",
+    cs:"CS 4",
+    efl:"Explain the ideals of the Declaration of Independence.",
+    contentElaboration:"unalienable rights and consent of the governed",
+    stem:"Which idea is most clearly stated in the Declaration of Independence?",
+    choices:[
+      "Government gets power from the consent of the people",
+      "Government should be led by hereditary rulers",
+      "Rights come from Parliament",
+      "Only property owners have liberty"
+    ],
+    answer:0,
+    explain:"The Declaration states that just powers come from the consent of the governed."
+  },
+  {
+    id:"D1S1-Q03",
+    type:"mcq",
+    cs:"CS 8",
+    efl:"Analyze how industrialization transformed the American economy.",
+    contentElaboration:"shift from agrarian to industrial society",
+    stem:"Which development best reflects industrialization in the late 1800s?",
+    choices:[
+      "Growth in factory labor",
+      "Return to hand-made goods",
+      "Decline in transportation networks",
+      "Reduced use of machinery"
+    ],
+    answer:0,
+    explain:"Industrialization increased factory-based work and machine production."
+  },
+  {
+    id:"D1S1-Q04",
+    type:"mcq",
+    cs:"CS 14",
+    efl:"Explain the causes of American imperialism.",
+    contentElaboration:"new markets and strategic interests",
+    stem:"Which factor most encouraged U.S. imperialism in the late 1800s?",
+    choices:[
+      "Desire for overseas markets",
+      "Commitment to isolationism",
+      "Lack of industrial goods",
+      "Need to reduce trade"
+    ],
+    answer:0,
+    explain:"Economic expansion and strategic interests were major causes of imperialism."
+  },
+  {
+    id:"D1S1-Q05",
+    type:"mcq",
+    cs:"CS 22",
+    efl:"Explain the origins of the Cold War.",
+    contentElaboration:"containment",
+    stem:"What was the main goal of the U.S. policy of containment?",
+    choices:[
+      "To spread communism",
+      "To stop the expansion of communism",
+      "To avoid all alliances",
+      "To reduce foreign trade"
+    ],
+    answer:1,
+    explain:"Containment was designed to prevent communism from spreading."
+  },
+  {
+    id:"D1S1-Q06",
+    type:"mcq",
+    cs:"CS 30",
+    efl:"Analyze changes in the modern economy.",
+    contentElaboration:"globalization",
+    stem:"Globalization most directly results in",
+    choices:[
+      "less international trade",
+      "greater economic interdependence",
+      "fewer communication networks",
+      "more isolated national economies"
+    ],
+    answer:1,
+    explain:"Globalization increases ties among world economies."
+  },
+  {
+    id:"D1S1-Q07",
+    type:"dropdown",
+    cs:"CS 2",
+    efl:"Develop a thesis and use evidence to support a position.",
+    contentElaboration:"historical claims supported by evidence",
+    stem:"Choose the strongest thesis statement.",
+    prompt:"Topic: The Northwest Ordinance shaped the future United States.",
+    options:[
+      "The Northwest Ordinance was written in 1787.",
+      "The Northwest Ordinance mattered because it set precedents for statehood, liberty, and education in western territories.",
+      "Territories existed in the United States.",
+      "Many laws were written in early America."
+    ],
+    answer:"The Northwest Ordinance mattered because it set precedents for statehood, liberty, and education in western territories.",
+    explain:"A strong thesis makes a meaningful historical argument, not just a simple fact."
+  },
+  {
+    id:"D1S1-Q08",
+    type:"mcq",
+    cs:"CS 5",
+    efl:"Explain the precedents established by the Northwest Ordinance.",
+    contentElaboration:"statehood, civil liberties, education",
+    stem:"Which was a major precedent of the Northwest Ordinance?",
+    choices:[
+      "Territories could become states",
+      "Only Congress could choose local leaders forever",
+      "Slavery would expand everywhere",
+      "National elections would be suspended"
+    ],
+    answer:0,
+    explain:"The ordinance set a process for territorial growth into statehood."
+  },
+  {
+    id:"D1S1-Q09",
+    type:"mcq",
+    cs:"CS 9",
+    efl:"Explain the causes and effects of immigration, internal migration, and urbanization.",
+    contentElaboration:"urban growth and changing city life",
+    stem:"Which development is most associated with urbanization in the late 1800s?",
+    choices:[
+      "Growth of crowded tenement housing",
+      "Decline of all factory work",
+      "Movement away from cities to farms",
+      "End of immigration"
+    ],
+    answer:0,
+    explain:"Rapid urbanization created crowded cities and tenement housing."
+  },
+  {
+    id:"D1S1-Q10",
+    type:"mcq",
+    cs:"CS 15",
+    efl:"Explain how World War I affected the United States and the world.",
+    contentElaboration:"causes and consequences of World War I",
+    stem:"Which event most directly pushed the United States toward entry into World War I?",
+    choices:[
+      "Zimmermann Telegram",
+      "Dawes Act",
+      "Marshall Plan",
+      "Kansas-Nebraska Act"
+    ],
+    answer:0,
+    explain:"The Zimmermann Telegram helped turn opinion toward war."
+  },
+  {
+    id:"D1S1-Q11",
+    type:"mcq",
+    cs:"CS 23",
+    efl:"Explain key Cold War policies and events.",
+    contentElaboration:"Truman Doctrine and Marshall Plan",
+    stem:"The Marshall Plan was intended mainly to",
+    choices:[
+      "rebuild Europe and limit communism",
+      "end all military alliances",
+      "support isolationism",
+      "promote monarchies in Europe"
+    ],
+    answer:0,
+    explain:"The Marshall Plan provided economic aid to strengthen Europe and resist communism."
+  },
+  {
+    id:"D1S1-Q12",
+    type:"mcq",
+    cs:"CS 31",
+    efl:"Explain how technology and communication affected modern life.",
+    contentElaboration:"technological change and communication",
+    stem:"Which technology most directly increased the speed of mass communication in recent decades?",
+    choices:[
+      "telegraph",
+      "internet",
+      "cotton gin",
+      "steam engine"
+    ],
+    answer:1,
+    explain:"The internet transformed modern communication."
+  },
+  {
+    id:"D1S1-Q13",
+    type:"mcq",
+    cs:"CS 3",
+    efl:"Analyze cause, effect, sequence, and correlation.",
+    contentElaboration:"multiple causation",
+    stem:"Which statement best shows multiple causation?",
+    choices:[
+      "An event always has only one cause",
+      "Migration north resulted from both push factors in the South and pull factors in northern cities",
+      "Only short-term causes matter in history",
+      "Correlation always proves causation"
+    ],
+    answer:1,
+    explain:"Many historical events are caused by multiple factors."
+  },
+  {
+    id:"D1S1-Q14",
+    type:"mcq",
+    cs:"CS 6",
+    efl:"Explain how the Constitution establishes limited government.",
+    contentElaboration:"separation of powers and federalism",
+    stem:"Which feature of the Constitution best reflects limited government?",
+    choices:[
+      "Power is defined and divided",
+      "Leaders may act without limits",
+      "States control foreign policy",
+      "Congress can remove rights at any time"
+    ],
+    answer:0,
+    explain:"Limited government means government power is structured and restricted."
+  },
+  {
+    id:"D1S1-Q15",
+    type:"mcq",
+    cs:"CS 10",
+    efl:"Explain how westward settlement intensified conflict with American Indians.",
+    contentElaboration:"reservation system and conflict",
+    stem:"Which policy most directly forced many American Indians onto designated lands?",
+    choices:[
+      "reservation system",
+      "Marshall Plan",
+      "Lend-Lease Act",
+      "New Deal"
+    ],
+    answer:0,
+    explain:"The reservation system confined many American Indians to set lands."
+  },
+  {
+    id:"D1S1-Q16",
+    type:"mcq",
+    cs:"CS 16",
+    efl:"Explain how postwar prosperity and technology changed American life.",
+    contentElaboration:"consumer culture and suburbanization",
+    stem:"Which development is most closely associated with post-World War II suburban growth?",
+    choices:[
+      "GI Bill and highway expansion",
+      "Homestead Act",
+      "Chinese Exclusion Act",
+      "Treaty of Versailles"
+    ],
+    answer:0,
+    explain:"Federal policies and highways supported suburban expansion after World War II."
+  },
+  {
+    id:"D1S1-Q17",
+    type:"mcq",
+    cs:"CS 24",
+    efl:"Explain how the Cold War affected domestic life.",
+    contentElaboration:"fear of communism and McCarthyism",
+    stem:"Which term is most associated with anti-communist investigations in the United States during the 1950s?",
+    choices:[
+      "McCarthyism",
+      "Populism",
+      "Progressivism",
+      "Reconstruction"
+    ],
+    answer:0,
+    explain:"McCarthyism refers to the anti-communist climate and accusations of the era."
+  },
+  {
+    id:"D1S1-Q18",
+    type:"mcq",
+    cs:"CS 32",
+    efl:"Explain social and demographic changes in recent America.",
+    contentElaboration:"changing population patterns",
+    stem:"Which trend best describes recent demographic change in the United States?",
+    choices:[
+      "greater population diversity",
+      "total end of immigration",
+      "permanent decline of cities everywhere",
+      "disappearance of regional differences"
+    ],
+    answer:0,
+    explain:"Modern America has become increasingly diverse."
+  },
+  {
+    id:"D1S1-Q19",
+    type:"multiselect",
+    cs:"CS 7",
+    efl:"Compare Federalist and Anti-Federalist arguments.",
+    contentElaboration:"Bill of Rights and limited power",
+    stem:"Which two concerns were most closely associated with Anti-Federalists? Select two.",
+    choices:[
+      "A bill of rights was needed",
+      "A strong central government might threaten liberty",
+      "Congress needed more unchecked power",
+      "State governments should be abolished"
+    ],
+    answers:[0,1],
+    explain:"Anti-Federalists feared centralized power and wanted clear protections for liberty."
+  },
+  {
+    id:"D1S1-Q20",
+    type:"mcq",
+    cs:"CS 11",
+    efl:"Explain how racial discrimination was institutionalized after Reconstruction.",
+    contentElaboration:"Jim Crow and Plessy v. Ferguson",
+    stem:"Which Supreme Court case supported segregation under the idea of 'separate but equal'?",
+    choices:[
+      "Brown v. Board of Education",
+      "Plessy v. Ferguson",
+      "Gideon v. Wainwright",
+      "Miranda v. Arizona"
+    ],
+    answer:1,
+    explain:"Plessy v. Ferguson upheld segregation in 1896."
+  },
+  {
+    id:"D1S1-Q21",
+    type:"mcq",
+    cs:"CS 17",
+    efl:"Explain how social and cultural tensions developed in the 1920s.",
+    contentElaboration:"mass culture, nativism, conflict",
+    stem:"Which development best reflects 1920s social change?",
+    choices:[
+      "growth of radio and mass culture",
+      "return to colonial agriculture",
+      "end of all nativist feeling",
+      "elimination of consumer credit"
+    ],
+    answer:0,
+    explain:"Radio and mass media helped shape 1920s culture."
+  },
+  {
+    id:"D1S1-Q22",
+    type:"mcq",
+    cs:"CS 25",
+    efl:"Explain the struggle for racial and gender equality after World War II.",
+    contentElaboration:"civil rights movements",
+    stem:"Which organization is most closely associated with legal challenges to school segregation?",
+    choices:[
+      "NAACP",
+      "AAA",
+      "TVA",
+      "WPA"
+    ],
+    answer:0,
+    explain:"The NAACP played a major role in civil rights litigation."
+  },
+  {
+    id:"D1S1-Q23",
+    type:"mcq",
+    cs:"CS 33",
+    efl:"Explain how domestic and foreign policy issues have shaped recent America.",
+    contentElaboration:"terrorism and security",
+    stem:"Which event most directly led to major debates over national security and civil liberties in the early 2000s?",
+    choices:[
+      "September 11 attacks",
+      "Spanish-American War",
+      "Watergate",
+      "Wounded Knee"
+    ],
+    answer:0,
+    explain:"The September 11 attacks reshaped debate over security and liberty."
+  },
+  {
+    id:"D1S1-Q24",
+    type:"mcq",
+    cs:"CS 12",
+    efl:"Analyze Progressive Era reforms.",
+    contentElaboration:"consumer protection and reform",
+    stem:"Which reform is most closely associated with the Progressive Era?",
+    choices:[
+      "Pure Food and Drug Act",
+      "Alien and Sedition Acts",
+      "Kansas-Nebraska Act",
+      "Neutrality Acts"
+    ],
+    answer:0,
+    explain:"The Progressive Era featured reform laws such as the Pure Food and Drug Act."
+  },
+  {
+    id:"D1S1-Q25",
+    type:"mcq",
+    cs:"CS 18",
+    efl:"Explain the causes of the Great Depression.",
+    contentElaboration:"speculation, debt, bank weakness",
+    stem:"Which factor contributed to the Great Depression?",
+    choices:[
+      "stock market speculation",
+      "strong banking regulation before 1929",
+      "elimination of consumer debt",
+      "balanced global recovery after World War I"
+    ],
+    answer:0,
+    explain:"Speculation and weak financial practices contributed to the crash and depression."
+  },
+  {
+    id:"D1S1-Q26",
+    type:"mcq",
+    cs:"CS 26",
+    efl:"Explain postwar social movements.",
+    contentElaboration:"women, youth, and marginalized groups",
+    stem:"Which movement most directly sought expanded opportunities and equality for women after World War II?",
+    choices:[
+      "women's rights movement",
+      "Know-Nothing movement",
+      "Open Door policy",
+      "containment policy"
+    ],
+    answer:0,
+    explain:"The women's rights movement pushed for broader equality and opportunity."
+  },
+  {
+    id:"D1S1-Q27",
+    type:"mcq",
+    cs:"CS 13",
+    efl:"Explain the causes and consequences of American imperialism.",
+    contentElaboration:"Spanish-American War and expansion",
+    stem:"Which war led the United States to gain overseas territories such as Puerto Rico and Guam?",
+    choices:[
+      "Spanish-American War",
+      "Civil War",
+      "World War I",
+      "Mexican War"
+    ],
+    answer:0,
+    explain:"The Spanish-American War resulted in new U.S. overseas possessions."
+  },
+  {
+    id:"D1S1-Q28",
+    type:"mcq",
+    cs:"CS 19",
+    efl:"Explain the responses of the federal government to the Great Depression.",
+    contentElaboration:"New Deal",
+    stem:"Which program is most closely associated with the New Deal?",
+    choices:[
+      "Social Security",
+      "Marshall Plan",
+      "GI Bill",
+      "Missouri Compromise"
+    ],
+    answer:0,
+    explain:"Social Security was a major New Deal program."
+  },
+  {
+    id:"D1S1-Q29",
+    type:"mcq",
+    cs:"CS 27",
+    efl:"Explain how the Cold War ended.",
+    contentElaboration:"collapse of communist governments",
+    stem:"Which development signaled the decline of Soviet influence in Eastern Europe?",
+    choices:[
+      "fall of the Berlin Wall",
+      "Louisiana Purchase",
+      "Compromise of 1850",
+      "Teapot Dome scandal"
+    ],
+    answer:0,
+    explain:"The fall of the Berlin Wall symbolized weakening Soviet control."
+  },
+  {
+    id:"D1S1-Q30",
+    type:"mcq",
+    cs:"CS 20",
+    efl:"Explain the causes and consequences of World War II.",
+    contentElaboration:"rise of dictators and global conflict",
+    stem:"Which event brought the United States directly into World War II?",
+    choices:[
+      "attack on Pearl Harbor",
+      "Zimmermann Telegram",
+      "sinking of the Lusitania",
+      "fall of the Berlin Wall"
+    ],
+    answer:0,
+    explain:"The Japanese attack on Pearl Harbor led directly to U.S. entry into World War II."
   }
 ];
 
