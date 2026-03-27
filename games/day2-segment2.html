@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Day 2 Segment 2 — American Studies OST Practice</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .topbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+    .topbar .pill{background:#0b1220;border:1px solid var(--line);color:#dbeafe}
+    .back-link{
+      display:inline-flex;align-items:center;gap:8px;
+      margin-bottom:14px;color:#cbd5e1;text-decoration:none;font-weight:700;
+    }
+    .game-panel{
+      background:rgba(17,24,39,.95);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:20px;
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+    }
+    .question-stem{font-size:1.18rem;line-height:1.5;margin-bottom:14px;font-weight:700}
+    .question-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+    .question-meta .chip{font-size:.82rem}
+    .choices{display:grid;gap:10px}
+    .choice-btn{
+      width:100%;text-align:left;background:#0b1220;color:var(--text);
+      border:1px solid var(--line);border-radius:14px;padding:14px 14px;
+      font-size:1rem;cursor:pointer;transition:transform .12s ease,border-color .12s ease,background .12s ease;
+    }
+    .choice-btn:hover{transform:translateY(-1px);border-color:#60a5fa}
+    .choice-btn.selected{border-color:#38bdf8;background:#0f2440}
+    .choice-btn.correct{border-color:#22c55e;background:rgba(34,197,94,.16)}
+    .choice-btn.incorrect{border-color:#ef4444;background:rgba(239,68,68,.16)}
+    .prompt-box{
+      background:#0b1220;border:1px solid var(--line);border-radius:14px;
+      padding:14px;margin-bottom:14px;line-height:1.55;color:#e2e8f0;
+    }
+    .passage{
+      background:#0b1220;border:1px solid var(--line);border-radius:14px;
+      padding:16px;margin-bottom:14px;line-height:1.6;color:#dbeafe;white-space:pre-line;
+    }
+    .inline-label{display:block;font-weight:800;margin-bottom:6px;color:#cbd5e1}
+    select, .fake-drop, input[type="text"]{
+      width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);
+      background:#0b1220;color:var(--text);font-size:1rem;margin-bottom:12px;
+    }
+    .multi-note{color:var(--muted);font-size:.95rem;margin-bottom:10px}
+    .feedback{
+      margin-top:14px;padding:14px;border-radius:14px;border:1px solid var(--line);
+      background:#0b1220;color:#e5e7eb;line-height:1.55;display:none;
+    }
+    .feedback.show{display:block}
+    .feedback.good{border-color:#22c55e;background:rgba(34,197,94,.12)}
+    .feedback.bad{border-color:#ef4444;background:rgba(239,68,68,.12)}
+    .controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+    .btn-lite{
+      display:inline-flex;align-items:center;justify-content:center;
+      min-height:46px;padding:12px 16px;border-radius:14px;
+      border:1px solid var(--line);background:#0b1220;color:#e2e8f0;
+      font-weight:800;cursor:pointer;
+    }
+    .btn-lite:disabled{opacity:.45;cursor:not-allowed}
+    .ticket{
+      background:#0b1220;border:1px solid var(--line);border-radius:16px;
+      padding:18px;line-height:1.7;
+    }
+    .danger{background:#3b0d14 !important;border-color:#7f1d1d !important;color:#fecaca !important}
+    .tiny{font-size:.9rem;color:var(--muted)}
+    .progress-wrap{
+      width:100%;height:14px;border-radius:999px;overflow:hidden;
+      background:#0b1220;border:1px solid var(--line);margin-top:12px;
+    }
+    .progress-bar{
+      height:100%;width:0%;
+      background:linear-gradient(90deg,#38bdf8,#22c55e);
+      transition:width .2s ease;
+    }
+    .matching-grid{display:grid;gap:12px}
+    .match-row{
+      background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px;
+    }
+    .submit-top{margin-left:auto}
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app"></div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxs-3yj0_p8rPFP3H3a3E8vv6YXBH6U3ssNs_Wv5JM_Zm_8XwmBwrtaDNpBUfyjKmauOg/exec";
+const TEST_NAME = "Day 2 Segment 2";
+const DAY_LABEL = "Day 2";
+const SEGMENT_LABEL = "Segment 2";
+const TOTAL_QUESTIONS = 30;
+const STORAGE_KEY = "AMHIST_D2S2_STATE_V1";
+
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
+function formatDateTime(d){ return new Date(d).toLocaleString(); }
+function formatRuntime(sec){
+  const s = Math.max(0, Math.floor(sec || 0));
+  const h = Math.floor(s / 3600).toString().padStart(2,"0");
+  const m = Math.floor((s % 3600) / 60).toString().padStart(2,"0");
+  const r = Math.floor(s % 60).toString().padStart(2,"0");
+  return `${h}:${m}:${r}`;
+}
+function hash32(str){
+  let h = 2166136261;
+  for(let i=0;i<str.length;i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function mulberry32(a){
+  return function(){
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffleSeeded(arr, seedStr){
+  const a = [...arr];
+  const rand = mulberry32(hash32(seedStr));
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(rand() * (i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function percent(n, d){ return d ? Math.round((n/d)*100) : 0; }
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    studentName: state.studentName,
+    startedAt: state.startedAt,
+    currentIndex: state.currentIndex,
+    answers: state.answers,
+    completed: state.completed,
+    questionOrder: state.questionOrder,
+    submitted: state.submitted
+  }));
+}
+function clearState(){ localStorage.removeItem(STORAGE_KEY); }
+function hardRestart(){
+  clearState();
+  location.href = location.pathname + "?r=" + Date.now();
+}
+
+/* =========================
+   REPLACE THIS BANK WITH THE DAY 2 SEGMENT 2 ARRAY
+========================= */
+const BANK = [
+  {
+    id:"D2S2-Q01",
+    type:"partab",
+    cs:"CS 1",
+    efl:"Analyze and evaluate the credibility of primary and secondary sources.",
+    contentElaboration:"bias and corroboration",
+    passage:`Source A is a speech by a factory owner claiming conditions are safe. Source B is a government investigation documenting injuries and safety problems.`,
+    partA:{
+      stem:"Part A: Which source is more likely to contain self-serving bias?",
+      choices:[
+        "Source A",
+        "Source B",
+        "Neither source",
+        "Both sources are equally unbiased"
+      ],
+      answer:0
+    },
+    partB:{
+      stem:"Part B: What should a historian do next?",
+      choices:[
+        "Use only Source A",
+        "Compare both sources with additional evidence",
+        "Ignore bias because all sources are equal",
+        "Choose the source with shorter paragraphs"
+      ],
+      answer:1
+    },
+    explain:"Historians identify possible bias and corroborate claims with other evidence."
+  }
+];
+
+const state = {
+  studentName: "",
+  startedAt: null,
+  currentIndex: 0,
+  answers: {},
+  completed: false,
+  submitted: false,
+  questionOrder: [],
+  ticker: null
+};
+
+function buildQuestionOrder(name, startedAt){
+  return shuffleSeeded(BANK.map(q => q.id), `${name}|${startedAt}|${TEST_NAME}`);
+}
+function getQuestionById(id){ return BANK.find(q => q.id === id); }
+function getCurrentQuestion(){ return getQuestionById(state.questionOrder[state.currentIndex]); }
+function answeredCount(){ return Object.keys(state.answers).length; }
+function correctCount(){
+  return BANK.reduce((sum, q) => sum + ((state.answers[q.id] && state.answers[q.id].correct) ? 1 : 0), 0);
+}
+function accuracyPct(){ return percent(correctCount(), answeredCount()); }
+
+function render(){
+  const app = document.getElementById("app");
+  if(!state.studentName || !state.startedAt){
+    app.innerHTML = renderStart();
+    bindStart();
+    return;
+  }
+  if(state.completed){
+    app.innerHTML = renderComplete();
+    bindComplete();
+    return;
+  }
+  app.innerHTML = renderQuestion();
+  bindQuestion();
+}
+function renderStart(){
+  return `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+
+    <section class="hero">
+      <div class="kicker">LEGEND — AMERICAN STUDIES OST PRACTICE</div>
+      <h1>${TEST_NAME}</h1>
+      <p class="sub">
+        30 questions. Segment 2 emphasizes application, analysis, causation, comparison, and higher-level reasoning across all 33 content statements in spiral form.
+      </p>
+      <div class="pills">
+        <span class="pill">30 questions</span>
+        <span class="pill">Segment 2</span>
+        <span class="pill">Spiral coverage</span>
+        <span class="pill">Apps Script connected</span>
+      </div>
+    </section>
+
+    <section class="game-panel">
+      <h2 style="margin-top:0;">Directions</h2>
+      <div class="prompt-box">
+        Enter your name to begin. Segment 2 leans more heavily on application and analysis.
+        Read each item carefully. Some questions require one answer, some require two selections,
+        and some use matching or Part A/Part B structures. When finished, click <strong>Submit Test</strong>.
+      </div>
+
+      <label class="inline-label" for="studentName">Student Name</label>
+      <input id="studentName" type="text" placeholder="Enter your name to begin" />
+
+      <div class="controls">
+        <button class="btn" id="beginBtn">Begin Test</button>
+        <a class="btn secondary" href="../index.html">Back to Hub</a>
+      </div>
+
+      <p class="tiny" style="margin-top:12px;">Progress in this browser will persist until you submit or restart.</p>
+    </section>
+  `;
+}
+function renderQuestion(){
+  const q = getCurrentQuestion();
+  const runtime = Math.floor((Date.now() - new Date(state.startedAt).getTime()) / 1000);
+  const answered = answeredCount();
+  const progress = percent(state.currentIndex, TOTAL_QUESTIONS);
+  const submitDisabled = answered === 0 ? "disabled" : "";
+
+  return `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+
+    <div class="topbar">
+      <span class="pill">Name: ${escapeHtml(state.studentName)}</span>
+      <span class="pill">Day: ${DAY_LABEL}</span>
+      <span class="pill">Segment: ${SEGMENT_LABEL}</span>
+      <span class="pill">Progress: ${Math.min(state.currentIndex + 1, TOTAL_QUESTIONS)} / ${TOTAL_QUESTIONS}</span>
+      <span class="pill">Answered: ${answered}</span>
+      <span class="pill">Accuracy: ${accuracyPct()}%</span>
+      <span class="pill">Runtime: <span id="runtimeText">${formatRuntime(runtime)}</span></span>
+      <button class="btn-lite submit-top" id="submitTopBtn" ${submitDisabled}>Submit Test</button>
+      <button class="btn-lite danger" id="restartTopBtn">Restart Test</button>
+    </div>
+
+    <section class="game-panel">
+      <div class="question-meta">
+        <span class="chip">${escapeHtml(q.cs)}</span>
+        <span class="chip">${escapeHtml(q.type)}</span>
+        <span class="chip">Question ${state.currentIndex + 1} of ${TOTAL_QUESTIONS}</span>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" style="width:${progress}%"></div>
+      </div>
+
+      ${renderQuestionBody(q)}
+
+      <div class="feedback" id="feedbackBox"></div>
+
+      <div class="controls">
+        <button class="btn" id="checkBtn">Check Answer</button>
+        <button class="btn-lite" id="nextBtn" disabled>Next</button>
+        <button class="btn-lite danger" id="restartBtn">Restart Test</button>
+      </div>
+    </section>
+  `;
+}
+function renderQuestionBody(q){
+  let html = `<div class="question-stem">${escapeHtml(q.stem)}</div>`;
+
+  if(q.passage){
+    html += `<div class="passage">${escapeHtml(q.passage)}</div>`;
+  }
+  if(q.prompt){
+    html += `<div class="prompt-box">${escapeHtml(q.prompt)}</div>`;
+  }
+
+  if(q.type === "mcq" || q.type === "passage-mcq"){
+    html += `<div class="choices">`;
+    q.choices.forEach((c, i) => {
+      html += `<button class="choice-btn" data-choice="${i}"><strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}</button>`;
+    });
+    html += `</div>`;
+  }
+
+  if(q.type === "multiselect"){
+    html += `<div class="multi-note">Select all correct answers, then click Check Answer.</div><div class="choices">`;
+    q.choices.forEach((c, i) => {
+      html += `<button class="choice-btn multi" data-choice="${i}"><strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}</button>`;
+    });
+    html += `</div>`;
+  }
+
+  if(q.type === "dropdown"){
+    html += `
+      <label class="inline-label" for="dropdownAnswer">Choose one answer</label>
+      <select id="dropdownAnswer">
+        <option value="">-- Select an answer --</option>
+        ${q.options.map(opt => `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}</option>`).join("")}
+      </select>
+    `;
+  }
+
+  if(q.type === "partab"){
+    html += `
+      <div class="prompt-box"><strong>${escapeHtml(q.partA.stem)}</strong></div>
+      <div class="choices">
+        ${q.partA.choices.map((c, i) => `
+          <button class="choice-btn partA" data-part="A" data-choice="${i}">
+            <strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}
+          </button>`).join("")}
+      </div>
+
+      <div class="prompt-box" style="margin-top:14px;"><strong>${escapeHtml(q.partB.stem)}</strong></div>
+      <div class="choices">
+        ${q.partB.choices.map((c, i) => `
+          <button class="choice-btn partB" data-part="B" data-choice="${i}">
+            <strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}
+          </button>`).join("")}
+      </div>
+    `;
+  }
+
+  if(q.type === "matching"){
+    html += `<div class="multi-note">Use the dropdowns to match each item.</div><div class="matching-grid">`;
+    q.left.forEach((leftText, idx) => {
+      html += `
+        <div class="match-row">
+          <div class="inline-label">${idx + 1}. ${escapeHtml(leftText)}</div>
+          <select class="match-select" data-index="${idx}">
+            <option value="">-- Match to result --</option>
+            ${q.right.map((r, ridx) => `<option value="${ridx}">${escapeHtml(r)}</option>`).join("")}
+          </select>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  return html;
+}
+function renderComplete(){
+  const started = new Date(state.startedAt);
+  const submitted = new Date();
+  const runtime = Math.floor((submitted.getTime() - started.getTime()) / 1000);
+  const score = correctCount();
+  const acc = percent(score, TOTAL_QUESTIONS);
+  const result = acc >= 80 ? "PASSING PRACTICE" : "RETEACH NEEDED";
+
+  return `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+
+    <section class="hero">
+      <div class="kicker">Submission Ticket</div>
+      <h1>${TEST_NAME} Complete</h1>
+      <p class="sub">Results have ${state.submitted ? "been submitted to the spreadsheet" : "not been submitted successfully yet"}.</p>
+    </section>
+
+    <section class="game-panel">
+      <div class="ticket">
+        <div><strong>Name:</strong> ${escapeHtml(state.studentName)}</div>
+        <div><strong>Date:</strong> ${new Date().toLocaleDateString()}</div>
+        <div><strong>Started:</strong> ${formatDateTime(started)}</div>
+        <div><strong>Submitted:</strong> ${formatDateTime(submitted)}</div>
+        <div><strong>Runtime:</strong> ${formatRuntime(runtime)}</div>
+        <div><strong>Score:</strong> ${score} / ${TOTAL_QUESTIONS}</div>
+        <div><strong>Accuracy:</strong> ${acc}%</div>
+        <div><strong>Result:</strong> ${result}</div>
+      </div>
+
+      <div class="controls">
+        <button class="btn-lite danger" id="restartAfterBtn">Restart Test</button>
+        <a class="btn secondary" href="../index.html">Back to Hub</a>
+      </div>
+    </section>
+  `;
+}
+
+function bindStart(){
+  document.getElementById("beginBtn").addEventListener("click", () => {
+    const name = document.getElementById("studentName").value.trim();
+    if(!name){
+      alert("Enter your name to begin.");
+      return;
+    }
+    state.studentName = name;
+    state.startedAt = new Date().toISOString();
+    state.currentIndex = 0;
+    state.answers = {};
+    state.completed = false;
+    state.submitted = false;
+    state.questionOrder = buildQuestionOrder(name, state.startedAt);
+    saveState();
+    render();
+    startTicker();
+  });
+}
+function bindComplete(){
+  document.getElementById("restartAfterBtn").addEventListener("click", hardRestart);
+}
+function bindQuestion(){
+  const q = getCurrentQuestion();
+
+  document.getElementById("restartTopBtn").addEventListener("click", hardRestart);
+  document.getElementById("restartBtn").addEventListener("click", hardRestart);
+
+  const submitTopBtn = document.getElementById("submitTopBtn");
+  if(submitTopBtn){
+    submitTopBtn.addEventListener("click", async () => {
+      if(answeredCount() === 0) return;
+      const ok = confirm("Submit the test now? Any unanswered questions will count as incorrect.");
+      if(!ok) return;
+      await finalizeSubmission();
+    });
+  }
+
+  if(q.type === "mcq" || q.type === "passage-mcq"){
+    document.querySelectorAll(".choice-btn[data-choice]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".choice-btn[data-choice]").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
+  }
+
+  if(q.type === "multiselect"){
+    document.querySelectorAll(".choice-btn.multi").forEach(btn => {
+      btn.addEventListener("click", () => btn.classList.toggle("selected"));
+    });
+  }
+
+  if(q.type === "partab"){
+    document.querySelectorAll(".choice-btn.partA").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".choice-btn.partA").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
+    document.querySelectorAll(".choice-btn.partB").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".choice-btn.partB").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
+  }
+
+  document.getElementById("checkBtn").addEventListener("click", () => handleCheck(q));
+  document.getElementById("nextBtn").addEventListener("click", async () => {
+    if(state.currentIndex < TOTAL_QUESTIONS - 1){
+      state.currentIndex++;
+      saveState();
+      render();
+    }else{
+      await finalizeSubmission();
+    }
+  });
+
+  startTicker();
+}
+function showFeedback(ok, html){
+  const box = document.getElementById("feedbackBox");
+  box.className = `feedback show ${ok ? "good" : "bad"}`;
+  box.innerHTML = html;
+}
+function lockQuestion(){
+  document.querySelectorAll(".choice-btn, select").forEach(el => el.disabled = true);
+  document.getElementById("checkBtn").disabled = true;
+  document.getElementById("nextBtn").disabled = false;
+}
+function markSingleChoices(correctIndex, selectedIndex){
+  document.querySelectorAll(".choice-btn[data-choice]").forEach(btn => {
+    const i = Number(btn.dataset.choice);
+    if(i === correctIndex) btn.classList.add("correct");
+    if(i === selectedIndex && i !== correctIndex) btn.classList.add("incorrect");
+  });
+}
+function arraysEqualUnordered(a,b){
+  if(a.length !== b.length) return false;
+  const sa = [...a].sort((x,y)=>x-y);
+  const sb = [...b].sort((x,y)=>x-y);
+  return sa.every((v,i)=>v===sb[i]);
+}
+function handleCheck(q){
+  let correct = false;
+  let responseData = null;
+
+  if(q.type === "mcq" || q.type === "passage-mcq"){
+    const selected = document.querySelector(".choice-btn.selected");
+    if(!selected){ alert("Choose an answer."); return; }
+    const idx = Number(selected.dataset.choice);
+    correct = idx === q.answer;
+    responseData = { selected: idx };
+    markSingleChoices(q.answer, idx);
+  }
+
+  if(q.type === "multiselect"){
+    const selected = [...document.querySelectorAll(".choice-btn.multi.selected")].map(b => Number(b.dataset.choice));
+    if(!selected.length){ alert("Select your answer choices."); return; }
+    correct = arraysEqualUnordered(selected, q.answers);
+    responseData = { selected };
+    document.querySelectorAll(".choice-btn.multi").forEach(btn => {
+      const i = Number(btn.dataset.choice);
+      if(q.answers.includes(i)) btn.classList.add("correct");
+      if(selected.includes(i) && !q.answers.includes(i)) btn.classList.add("incorrect");
+    });
+  }
+
+  if(q.type === "dropdown"){
+    const selected = document.getElementById("dropdownAnswer").value;
+    if(!selected){ alert("Choose an answer."); return; }
+    correct = selected === q.answer;
+    responseData = { selected };
+  }
+
+  if(q.type === "partab"){
+    const a = document.querySelector(".choice-btn.partA.selected");
+    const b = document.querySelector(".choice-btn.partB.selected");
+    if(!a || !b){ alert("Answer both Part A and Part B."); return; }
+    const aIdx = Number(a.dataset.choice);
+    const bIdx = Number(b.dataset.choice);
+    correct = aIdx === q.partA.answer && bIdx === q.partB.answer;
+    responseData = { partA:aIdx, partB:bIdx };
+
+    document.querySelectorAll(".choice-btn.partA").forEach(btn => {
+      const i = Number(btn.dataset.choice);
+      if(i === q.partA.answer) btn.classList.add("correct");
+      if(i === aIdx && i !== q.partA.answer) btn.classList.add("incorrect");
+    });
+    document.querySelectorAll(".choice-btn.partB").forEach(btn => {
+      const i = Number(btn.dataset.choice);
+      if(i === q.partB.answer) btn.classList.add("correct");
+      if(i === bIdx && i !== q.partB.answer) btn.classList.add("incorrect");
+    });
+  }
+
+  if(q.type === "matching"){
+    const selected = [...document.querySelectorAll(".match-select")].map(s => s.value === "" ? "" : Number(s.value));
+    if(selected.some(v => v === "")){ alert("Complete all matches."); return; }
+    correct = selected.every((v, i) => v === q.answers[i]);
+    responseData = { selected };
+  }
+
+  state.answers[q.id] = { correct, responseData };
+  saveState();
+
+  showFeedback(correct, `<strong>${correct ? "Correct." : "Incorrect."}</strong> ${escapeHtml(q.explain)}`);
+  lockQuestion();
+}
+
+function buildSubmissionPayload(){
+  const submittedAt = new Date().toISOString();
+  const runtimeSeconds = Math.floor((Date.now() - new Date(state.startedAt).getTime()) / 1000);
+  const questions = BANK.map(q => {
+    const rec = state.answers[q.id];
+    return {
+      id: q.id,
+      type: q.type,
+      cs: q.cs,
+      efl: q.efl,
+      contentElaboration: q.contentElaboration,
+      correct: !!(rec && rec.correct)
+    };
+  });
+  const score = correctCount();
+
+  return {
+    studentName: state.studentName,
+    testName: TEST_NAME,
+    day: DAY_LABEL,
+    segment: SEGMENT_LABEL,
+    startedAt: state.startedAt,
+    submittedAt,
+    runtimeSeconds,
+    score,
+    total: TOTAL_QUESTIONS,
+    accuracy: TOTAL_QUESTIONS ? score / TOTAL_QUESTIONS : 0,
+    questions
+  };
+}
+async function finalizeSubmission(){
+  state.completed = true;
+  try{
+    const payload = buildSubmissionPayload();
+    const res = await fetch(WEB_APP_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    state.submitted = !!data.ok;
+  }catch(err){
+    state.submitted = false;
+  }
+  saveState();
+  render();
+}
+
+function startTicker(){
+  if(state.ticker) clearInterval(state.ticker);
+  const runtimeNode = document.getElementById("runtimeText");
+  if(!runtimeNode) return;
+  state.ticker = setInterval(() => {
+    const sec = Math.floor((Date.now() - new Date(state.startedAt).getTime()) / 1000);
+    const node = document.getElementById("runtimeText");
+    if(node) node.textContent = formatRuntime(sec);
+  }, 1000);
+}
+function boot(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved){
+    try{
+      const parsed = JSON.parse(saved);
+      if(parsed && parsed.studentName && parsed.startedAt){
+        state.studentName = parsed.studentName;
+        state.startedAt = parsed.startedAt;
+        state.currentIndex = parsed.currentIndex || 0;
+        state.answers = parsed.answers || {};
+        state.completed = !!parsed.completed;
+        state.submitted = !!parsed.submitted;
+        state.questionOrder = Array.isArray(parsed.questionOrder) && parsed.questionOrder.length === TOTAL_QUESTIONS
+          ? parsed.questionOrder
+          : buildQuestionOrder(parsed.studentName, parsed.startedAt);
+      }
+    }catch(err){}
+  }
+  render();
+}
+window.addEventListener("pageshow", e => {
+  if(e.persisted) boot();
+});
+boot();
+</script>
+</body>
+</html>
