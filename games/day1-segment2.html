@@ -3,166 +3,329 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Day 1 Segment 2 — American Studies OST Practice</title>
+  <title>American Studies Test Week — Day 1 Segment 2</title>
   <link rel="stylesheet" href="../styles.css" />
   <style>
-    .topbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
-    .topbar .pill{background:#0b1220;border:1px solid var(--line);color:#dbeafe}
+    :root{
+      --bg:#071226;
+      --panel:#0b1730;
+      --panel2:#0e1d3b;
+      --line:#23365c;
+      --text:#eaf2ff;
+      --muted:#a9bbdd;
+      --accent:#79a9ff;
+      --warn:#f4b740;
+      --good:#4fd18b;
+      --bad:#ff7b7b;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:radial-gradient(circle at top, #0b1b3d 0%, #061124 65%, #040b19 100%);
+      color:var(--text);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    body{min-height:100vh}
+
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:20px 16px 40px;
+    }
+
     .back-link{
-      display:inline-flex;align-items:center;gap:8px;
-      margin-bottom:14px;color:#cbd5e1;text-decoration:none;font-weight:700;
+      display:inline-block;
+      color:#9db8ff;
+      text-decoration:none;
+      font-weight:700;
+      margin-bottom:10px;
     }
-    .game-panel{
-      background:rgba(17,24,39,.95);
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .topbar-left,
+    .topbar-right{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .pill,.tag{
       border:1px solid var(--line);
-      border-radius:20px;
-      padding:20px;
-      box-shadow:var(--shadow);
-      margin-bottom:18px;
+      background:#081326;
+      color:var(--text);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:13px;
+      font-weight:700;
     }
-    .question-stem{font-size:1.18rem;line-height:1.5;margin-bottom:14px;font-weight:700}
-    .question-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-    .question-meta .chip{font-size:.82rem}
-    .choices{display:grid;gap:10px}
-    .choice-btn{
-      width:100%;text-align:left;background:#0b1220;color:var(--text);
-      border:1px solid var(--line);border-radius:14px;padding:14px 14px;
-      font-size:1rem;cursor:pointer;transition:transform .12s ease,border-color .12s ease,background .12s ease;
+
+    .panel{
+      background:rgba(8,19,38,.92);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:14px;
+      box-shadow:0 8px 24px rgba(0,0,0,.28);
     }
-    .choice-btn:hover{transform:translateY(-1px);border-color:#60a5fa}
-    .choice-btn.selected{border-color:#38bdf8;background:#0f2440}
-    .choice-btn.correct{border-color:#22c55e;background:rgba(34,197,94,.16)}
-    .choice-btn.incorrect{border-color:#ef4444;background:rgba(239,68,68,.16)}
-    .prompt-box{
-      background:#0b1220;border:1px solid var(--line);border-radius:14px;
-      padding:14px;margin-bottom:14px;line-height:1.55;color:#e2e8f0;
+
+    .name-card{
+      max-width:760px;
+      margin:24px auto 0;
     }
-    .passage{
-      background:#0b1220;border:1px solid var(--line);border-radius:14px;
-      padding:16px;margin-bottom:14px;line-height:1.6;color:#dbeafe;white-space:pre-line;
+
+    .kicker{
+      color:#8eb1ff;
+      font-size:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:8px;
     }
-    .inline-label{display:block;font-weight:800;margin-bottom:6px;color:#cbd5e1}
-    select, .fake-drop, input[type="text"]{
-      width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);
-      background:#0b1220;color:var(--text);font-size:1rem;margin-bottom:12px;
+
+    h1,h2{
+      margin:0 0 10px;
+      line-height:1.2;
     }
-    .multi-note{color:var(--muted);font-size:.95rem;margin-bottom:10px}
-    .feedback{
-      margin-top:14px;padding:14px;border-radius:14px;border:1px solid var(--line);
-      background:#0b1220;color:#e5e7eb;line-height:1.55;display:none;
+
+    .sub,.help,.muted{
+      color:var(--muted);
+      line-height:1.5;
     }
-    .feedback.show{display:block}
-    .feedback.good{border-color:#22c55e;background:rgba(34,197,94,.12)}
-    .feedback.bad{border-color:#ef4444;background:rgba(239,68,68,.12)}
-    .controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
-    .btn-lite{
-      display:inline-flex;align-items:center;justify-content:center;
-      min-height:46px;padding:12px 16px;border-radius:14px;
-      border:1px solid var(--line);background:#0b1220;color:#e2e8f0;
-      font-weight:800;cursor:pointer;
+
+    .input{
+      width:100%;
+      min-height:44px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#071222;
+      color:var(--text);
+      padding:10px 12px;
+      font-size:16px;
     }
-    .btn-lite:disabled{opacity:.45;cursor:not-allowed}
-    .ticket{
-      background:#0b1220;border:1px solid var(--line);border-radius:16px;
-      padding:18px;line-height:1.7;
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
     }
-    .danger{background:#3b0d14 !important;border-color:#7f1d1d !important;color:#fecaca !important}
-    .tiny{font-size:.9rem;color:var(--muted)}
+
+    .stat{
+      background:#081326;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+
+    .stat-value{
+      font-size:18px;
+      font-weight:800;
+      color:var(--text);
+    }
+
     .progress-wrap{
-      width:100%;height:14px;border-radius:999px;overflow:hidden;
-      background:#0b1220;border:1px solid var(--line);margin-top:12px;
+      margin-top:12px;
+      width:100%;
+      height:12px;
+      border-radius:999px;
+      background:#071222;
+      border:1px solid var(--line);
+      overflow:hidden;
     }
+
     .progress-bar{
-      height:100%;width:0%;
-      background:linear-gradient(90deg,#38bdf8,#22c55e);
-      transition:width .2s ease;
+      height:100%;
+      background:linear-gradient(90deg,#6ea2ff,#9bc2ff);
     }
-    .matching-grid{display:grid;gap:12px}
-    .match-row{
-      background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:12px;
+
+    .question-card{
+      margin-top:4px;
     }
-    .submit-top{margin-left:auto}
+
+    .q-type{
+      color:#9db8ff;
+      font-size:13px;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+
+    .q-stem{
+      font-size:22px;
+      line-height:1.35;
+      font-weight:800;
+      margin-bottom:16px;
+    }
+
+    .prompt-box,.passage{
+      background:#081326;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:14px;
+      line-height:1.6;
+    }
+
+    .choices{
+      display:grid;
+      gap:10px;
+    }
+
+    .choice{
+      width:100%;
+      text-align:left;
+      border:1px solid var(--line);
+      background:#071222;
+      color:var(--text);
+      border-radius:12px;
+      padding:12px 14px;
+      min-height:50px;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .choice:hover{border-color:#5f8fff}
+    .choice.selected{
+      background:#11254b;
+      border-color:#79a9ff;
+    }
+
+    .choice-letter{
+      display:inline-block;
+      min-width:28px;
+      color:#aecdff;
+    }
+
+    .footer-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:14px;
+    }
+
+    button{
+      min-height:42px;
+      border:none;
+      border-radius:12px;
+      padding:10px 14px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      background:#7ea9ff;
+      color:#071426;
+    }
+
+    button.secondary{
+      background:#1a2d52;
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    button.warn{
+      background:#f4b740;
+      color:#2a1b00;
+    }
+
+    button:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
+    .review-box{
+      display:grid;
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .review-item{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background:#081326;
+    }
+
+    .review-top{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      margin-bottom:8px;
+    }
+
+    .sep{
+      border:none;
+      border-top:1px solid var(--line);
+      margin:16px 0;
+    }
+
+    .result-ready{color:var(--good)}
+    .result-review{color:var(--warn)}
+
+    @media (max-width: 760px){
+      .stats{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+      .q-stem{
+        font-size:18px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="wrap" id="app"></div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxs-3yj0_p8rPFP3H3a3E8vv6YXBH6U3ssNs_Wv5JM_Zm_8XwmBwrtaDNpBUfyjKmauOg/exec";
-const TEST_NAME = "Day 1 Segment 2";
-const DAY_LABEL = "Day 1";
-const SEGMENT_LABEL = "Segment 2";
-const TOTAL_QUESTIONS = 30;
-const STORAGE_KEY = "AMHIST_D1S2_STATE_V1";
+/* =========================
+   CONFIG
+========================= */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxs-3yj0_p8rPFP3H3a3E8vv6YXBH6U3ssNs_Wv5JM_Zm_8XwmBwrtaDNpBUfyjKmauOg/exec";
 
-function escapeHtml(str){
-  return String(str ?? "").replace(/[&<>"']/g, m => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[m]));
-}
-function formatDateTime(d){
-  return new Date(d).toLocaleString();
-}
-function formatRuntime(sec){
-  const s = Math.max(0, Math.floor(sec || 0));
-  const h = Math.floor(s / 3600).toString().padStart(2,"0");
-  const m = Math.floor((s % 3600) / 60).toString().padStart(2,"0");
-  const r = Math.floor(s % 60).toString().padStart(2,"0");
-  return `${h}:${m}:${r}`;
-}
-function hash32(str){
-  let h = 2166136261;
-  for(let i=0;i<str.length;i++){
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-function mulberry32(a){
-  return function(){
-    let t = a += 0x6D2B79F5;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-function shuffleSeeded(arr, seedStr){
-  const a = [...arr];
-  const rand = mulberry32(hash32(seedStr));
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(rand() * (i+1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-function percent(n, d){
-  return d ? Math.round((n/d)*100) : 0;
-}
-function saveState(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    studentName: state.studentName,
-    startedAt: state.startedAt,
-    currentIndex: state.currentIndex,
-    answers: state.answers,
-    completed: state.completed,
-    questionOrder: state.questionOrder,
-    submitted: state.submitted
-  }));
-}
-function clearState(){ localStorage.removeItem(STORAGE_KEY); }
-function hardRestart(){
-  clearState();
-  location.href = location.pathname + "?r=" + Date.now();
-}
+const TEST_META = {
+  subject: "American Studies",
+  week: "OST Practice Week",
+  day: "Day 1",
+  segment: "Segment 2",
+  title: "American Studies Test Week — Day 1 Segment 2",
+  focus: "Application / Analysis"
+};
 
-const BANK = [
+const ATTEMPT_KEY = "AMSTUD_D1_S2_ATTEMPT_LOCK";
+const STORAGE_KEY = "LEGEND_AMSTUD_D1_S2_STATE_V1";
+const TEACHER_SECRET = "legend";
+const TEACHER_OVERRIDE = new URLSearchParams(location.search).get("unlock") === TEACHER_SECRET;
+
+/* =========================
+   QUESTION BANK
+========================= */
+const QUESTION_BANK = [
   {
     id:"D1S2-Q01",
     type:"partab",
     cs:"CS 21",
     efl:"Explain the U.S. transition from isolationism to involvement in World War II.",
     contentElaboration:"Neutrality Acts, Lend-Lease, Pearl Harbor",
-    passage:`In the 1930s, many Americans wanted to avoid another overseas war. Over time, however, U.S. policy shifted from neutrality toward greater support for nations fighting Axis aggression.`,
+    passage:"In the 1930s, many Americans wanted to avoid another overseas war. Over time, however, U.S. policy shifted from neutrality toward greater support for nations fighting Axis aggression.",
     partA:{
       stem:"Part A: Which policy best shows the United States moving away from strict neutrality before entering World War II?",
       choices:[
@@ -171,7 +334,7 @@ const BANK = [
         "Homestead Act",
         "Interstate Commerce Act"
       ],
-      answer:0
+      answer:[0]
     },
     partB:{
       stem:"Part B: Why was that policy significant?",
@@ -181,9 +344,9 @@ const BANK = [
         "It reduced the power of the presidency",
         "It returned the nation to complete isolationism"
       ],
-      answer:0
+      answer:[0]
     },
-    explain:"Lend-Lease shows the U.S. moving away from strict neutrality by supporting the Allies."
+    explain:"Lend-Lease shows the U.S. moving away from strict neutrality by supporting Allied nations."
   },
   {
     id:"D1S2-Q02",
@@ -191,7 +354,7 @@ const BANK = [
     cs:"CS 28",
     efl:"Explain how post-Cold War foreign and domestic issues shaped the United States.",
     contentElaboration:"changing world role after Cold War",
-    passage:`After the Cold War, the United States remained deeply involved in international affairs, including military action, alliances, and debates over how the nation should respond to regional conflicts.`,
+    passage:"After the Cold War, the United States remained deeply involved in international affairs, including military action, alliances, and debates over how the nation should respond to regional conflicts.",
     stem:"Which conclusion is best supported by the passage?",
     choices:[
       "The end of the Cold War ended all U.S. foreign involvement",
@@ -199,12 +362,12 @@ const BANK = [
       "Foreign policy became unimportant after 1991",
       "All international conflicts disappeared"
     ],
-    answer:1,
+    answer:[1],
     explain:"The passage shows that U.S. foreign policy remained active after the Cold War."
   },
   {
     id:"D1S2-Q03",
-    type:"mcq",
+    type:"mc",
     cs:"CS 29",
     efl:"Explain how demographic and economic changes have affected modern America.",
     contentElaboration:"service economy and workforce shifts",
@@ -215,8 +378,8 @@ const BANK = [
       "decline in all technology use",
       "end of global trade"
     ],
-    answer:0,
-    explain:"Modern America has seen major growth in service-sector jobs."
+    answer:[0],
+    explain:"Modern America has seen major growth in service-sector employment."
   },
   {
     id:"D1S2-Q04",
@@ -224,7 +387,7 @@ const BANK = [
     cs:"CS 1",
     efl:"Analyze and evaluate the credibility of primary and secondary sources.",
     contentElaboration:"bias and corroboration",
-    passage:`Source A is a factory owner's speech praising working conditions. Source B is a state investigation reporting unsafe machinery and frequent injuries.`,
+    passage:"Source A is a factory owner's speech praising working conditions. Source B is a state investigation reporting unsafe machinery and frequent injuries.",
     partA:{
       stem:"Part A: Which source is more likely to include self-serving bias?",
       choices:[
@@ -233,7 +396,7 @@ const BANK = [
         "Both are equally unbiased",
         "Neither could contain bias"
       ],
-      answer:0
+      answer:[0]
     },
     partB:{
       stem:"Part B: What should a historian do next?",
@@ -243,13 +406,13 @@ const BANK = [
         "Ignore the issue of bias",
         "Choose the shorter source"
       ],
-      answer:1
+      answer:[1]
     },
     explain:"Historians identify perspective and compare sources to corroborate claims."
   },
   {
     id:"D1S2-Q05",
-    type:"mcq",
+    type:"mc",
     cs:"CS 3",
     efl:"Analyze cause, effect, sequence, and correlation.",
     contentElaboration:"long-term and short-term causation",
@@ -260,7 +423,7 @@ const BANK = [
       "It cannot be explained using cause and effect",
       "It was caused only by one speech or one law"
     ],
-    answer:1,
+    answer:[1],
     explain:"Historical migration patterns often involve both push and pull factors."
   },
   {
@@ -280,7 +443,7 @@ const BANK = [
       "Value of schooling in new territories",
       "Legal protections and natural rights"
     ],
-    answers:[1,0,2],
+    answer:[1,0,2],
     explain:"The Northwest Ordinance shaped future territorial government and civic development."
   },
   {
@@ -296,29 +459,29 @@ const BANK = [
       "The national government needed more unchecked power",
       "States should disappear completely"
     ],
-    answers:[0,1],
+    answer:[0,1],
     explain:"Anti-Federalists feared concentrated power and wanted liberty protections."
   },
   {
     id:"D1S2-Q08",
     type:"passage-mcq",
     cs:"CS 8",
-    efl:"Analyze how industrialization transformed the American economy.",
-    contentElaboration:"mechanized farming and factory labor",
-    passage:`A chart shows fewer Americans working on farms and more Americans working in factories as machinery and mass production expanded.`,
+    efl:"Analyze how industrialization transformed the economy.",
+    contentElaboration:"shift from agrarian to industrial society",
+    passage:"A chart shows that from 1870 to 1910 the percentage of agricultural workers declined, the percentage of factory workers rose, and urban populations increased steadily.",
     stem:"Which conclusion is best supported by the chart?",
     choices:[
-      "The economy became more industrial",
-      "Industrialization ended transportation growth",
-      "Most Americans returned to subsistence farming",
-      "Mechanization increased the need for farm labor"
+      "The United States became increasingly industrial and urban",
+      "Most Americans returned from cities to farms",
+      "Industrialization ended demand for all labor",
+      "Urbanization reduced the importance of transportation"
     ],
-    answer:0,
-    explain:"The chart shows a shift toward industrial labor."
+    answer:[0],
+    explain:"The pattern shows the economy shifting from agriculture toward industry and city life."
   },
   {
     id:"D1S2-Q09",
-    type:"mcq",
+    type:"mc",
     cs:"CS 10",
     efl:"Explain how westward settlement intensified conflict with American Indians.",
     contentElaboration:"assimilation and resistance",
@@ -329,7 +492,7 @@ const BANK = [
       "Monroe Doctrine",
       "Social Security Act"
     ],
-    answer:0,
+    answer:[0],
     explain:"The Dawes Act broke up tribal lands and pushed assimilation."
   },
   {
@@ -338,7 +501,7 @@ const BANK = [
     cs:"CS 12",
     efl:"Analyze Progressive reforms and their success in addressing social and economic problems.",
     contentElaboration:"consumer protection and regulation",
-    passage:`Progressive reformers argued that industrial capitalism had created unsafe products, corruption, and abuses of power that required government action.`,
+    passage:"Progressive reformers argued that industrial capitalism had created unsafe products, corruption, and abuses of power that required government action.",
     partA:{
       stem:"Part A: Which reform best fits that goal?",
       choices:[
@@ -347,7 +510,7 @@ const BANK = [
         "Missouri Compromise",
         "Alien and Sedition Acts"
       ],
-      answer:0
+      answer:[0]
     },
     partB:{
       stem:"Part B: Which problem was that reform designed to address?",
@@ -357,13 +520,13 @@ const BANK = [
         "colonial taxation",
         "Cold War rivalry"
       ],
-      answer:0
+      answer:[0]
     },
     explain:"Progressive reform often focused on government action against unsafe products and abuses."
   },
   {
     id:"D1S2-Q11",
-    type:"mcq",
+    type:"mc",
     cs:"CS 14",
     efl:"Explain the causes of American imperialism.",
     contentElaboration:"strategic and economic motives",
@@ -374,12 +537,12 @@ const BANK = [
       "It had no industrial capacity",
       "It rejected naval power"
     ],
-    answer:0,
+    answer:[0],
     explain:"Economic opportunity and strategic position drove imperialism."
   },
   {
     id:"D1S2-Q12",
-    type:"mcq",
+    type:"mc",
     cs:"CS 16",
     efl:"Explain how postwar prosperity and technology changed American life.",
     contentElaboration:"consumer society and suburbanization",
@@ -390,7 +553,7 @@ const BANK = [
       "end of federal aid to veterans",
       "collapse of consumer culture"
     ],
-    answer:0,
+    answer:[0],
     explain:"Highways and postwar prosperity helped expand suburbia."
   },
   {
@@ -399,7 +562,7 @@ const BANK = [
     cs:"CS 18",
     efl:"Explain the causes of the Great Depression.",
     contentElaboration:"speculation and financial instability",
-    passage:`A student writes that easy credit, stock speculation, and weak banking practices left the economy vulnerable before 1929.`,
+    passage:"A student writes that easy credit, stock speculation, and weak banking practices left the economy vulnerable before 1929.",
     stem:"Which conclusion best matches the passage?",
     choices:[
       "The Great Depression had multiple economic causes",
@@ -407,7 +570,7 @@ const BANK = [
       "The economy was stable before 1929",
       "Bank failures began only after World War II"
     ],
-    answer:0,
+    answer:[0],
     explain:"The passage identifies multiple causes rather than one isolated cause."
   },
   {
@@ -418,18 +581,18 @@ const BANK = [
     contentElaboration:"rise of dictators and global instability",
     stem:"Choose the best completion.",
     prompt:"Aggressive expansion by Germany, Italy, and Japan in the 1930s most directly contributed to",
-    options:[
+    choices:[
       "the outbreak of World War II",
       "the end of all alliances",
       "the success of neutrality forever",
       "the collapse of industrialization"
     ],
-    answer:"the outbreak of World War II",
+    answer:[0],
     explain:"Expansionist aggression helped trigger World War II."
   },
   {
     id:"D1S2-Q15",
-    type:"mcq",
+    type:"mc",
     cs:"CS 22",
     efl:"Explain the origins of the Cold War.",
     contentElaboration:"containment and superpower rivalry",
@@ -440,12 +603,12 @@ const BANK = [
       "territorial disputes among colonies only",
       "debates over the Articles of Confederation"
     ],
-    answer:0,
+    answer:[0],
     explain:"The Cold War centered on rivalry between the U.S. and USSR."
   },
   {
     id:"D1S2-Q16",
-    type:"mcq",
+    type:"mc",
     cs:"CS 24",
     efl:"Explain how the Cold War affected domestic life.",
     contentElaboration":"anti-communism and fear",
@@ -456,7 +619,7 @@ const BANK = [
       "decline of military spending",
       "collapse of television culture"
     ],
-    answer:0,
+    answer:[0],
     explain:"Cold War fear shaped domestic politics and culture."
   },
   {
@@ -472,12 +635,12 @@ const BANK = [
       "return to absolute monarchy",
       "end of all protest activity"
     ],
-    answers:[0,1],
+    answer:[0,1],
     explain:"Postwar America saw broad social activism by multiple groups."
   },
   {
     id:"D1S2-Q18",
-    type:"mcq",
+    type:"mc",
     cs:"CS 30",
     efl:"Analyze changes in the modern economy.",
     contentElaboration":"globalization and technology",
@@ -488,7 +651,7 @@ const BANK = [
       "decline of technology",
       "reduction in international investment"
     ],
-    answer:0,
+    answer:[0],
     explain:"Technology has made global economic connection much faster and easier."
   },
   {
@@ -497,7 +660,7 @@ const BANK = [
     cs:"CS 31",
     efl:"Explain how technology and communication affected modern life.",
     contentElaboration":"media, information, and communication",
-    passage:`A historian argues that modern technology allows information to move instantly across the world, shaping politics, culture, and economic decisions in real time.`,
+    passage:"A historian argues that modern technology allows information to move instantly across the world, shaping politics, culture, and economic decisions in real time.",
     partA:{
       stem:"Part A: Which technology best supports that claim?",
       choices:[
@@ -506,7 +669,7 @@ const BANK = [
         "canal boat",
         "cotton gin"
       ],
-      answer:0
+      answer:[0]
     },
     partB:{
       stem:"Part B: What is the best effect of that technology?",
@@ -516,13 +679,13 @@ const BANK = [
         "end of cultural exchange",
         "reduced political participation"
       ],
-      answer:0
+      answer:[0]
     },
     explain:"Modern digital technology has transformed how quickly information circulates."
   },
   {
     id:"D1S2-Q20",
-    type:"mcq",
+    type:"mc",
     cs:"CS 32",
     efl:"Explain social and demographic changes in recent America.",
     contentElaboration":"population movement and diversity",
@@ -533,12 +696,12 @@ const BANK = [
       "a return to a purely rural population",
       "the disappearance of all cultural differences"
     ],
-    answer:0,
+    answer:[0],
     explain:"Recent decades have seen significant population movement and increasing diversity."
   },
   {
     id:"D1S2-Q21",
-    type:"mcq",
+    type:"mc",
     cs:"CS 33",
     efl:"Explain how domestic and foreign policy issues have shaped recent America.",
     contentElaboration":"security and civil liberties",
@@ -549,12 +712,12 @@ const BANK = [
       "slavery and abolition",
       "agriculture and industrialization"
     ],
-    answer:0,
+    answer:[0],
     explain:"Security measures after 9/11 raised major civil-liberties questions."
   },
   {
     id:"D1S2-Q22",
-    type:"mcq",
+    type:"mc",
     cs:"CS 4",
     efl:"Explain the ideals of the Declaration of Independence.",
     contentElaboration":"rights and role of government",
@@ -565,12 +728,12 @@ const BANK = [
       "nullification movement",
       "temperance only as taxation policy"
     ],
-    answer:0,
+    answer:[0],
     explain:"Reformers often used Declaration ideals to argue for broader equality."
   },
   {
     id:"D1S2-Q23",
-    type:"mcq",
+    type:"mc",
     cs:"CS 6",
     efl:"Explain how the Constitution establishes limited government.",
     contentElaboration":"federalism",
@@ -581,7 +744,7 @@ const BANK = [
       "containment",
       "imperialism"
     ],
-    answer:0,
+    answer:[0],
     explain:"Federalism divides power between national and state governments."
   },
   {
@@ -590,7 +753,7 @@ const BANK = [
     cs:"CS 9",
     efl:"Explain the causes and effects of immigration, internal migration, and urbanization.",
     contentElaboration":"tenements and city growth",
-    passage:`A reform report describes overcrowded tenements, unsanitary streets, and disease spreading rapidly in rapidly growing neighborhoods.`,
+    passage:"A reform report describes overcrowded tenements, unsanitary streets, and disease spreading rapidly in rapidly growing neighborhoods.",
     stem:"The conditions described are best understood as a consequence of",
     choices:[
       "rapid urbanization",
@@ -598,12 +761,12 @@ const BANK = [
       "declining industrial growth",
       "the disappearance of cities"
     ],
-    answer:0,
+    answer:[0],
     explain:"Rapid urban growth often outpaced housing and sanitation systems."
   },
   {
     id:"D1S2-Q25",
-    type:"mcq",
+    type:"mc",
     cs:"CS 11",
     efl:"Explain how racial discrimination was institutionalized after Reconstruction.",
     contentElaboration":"Jim Crow laws",
@@ -614,12 +777,12 @@ const BANK = [
       "abolish discrimination",
       "support labor unions"
     ],
-    answer:0,
+    answer:[0],
     explain:"Jim Crow laws institutionalized racial segregation and discrimination."
   },
   {
     id:"D1S2-Q26",
-    type:"mcq",
+    type:"mc",
     cs:"CS 13",
     efl:"Explain the causes and consequences of American imperialism.",
     contentElaboration":"Spanish-American War and expansion",
@@ -630,12 +793,12 @@ const BANK = [
       "the Constitution was rewritten",
       "slavery expanded into western territories"
     ],
-    answer:0,
+    answer:[0],
     explain:"The war expanded U.S. influence overseas."
   },
   {
     id:"D1S2-Q27",
-    type:"mcq",
+    type:"mc",
     cs:"CS 15",
     efl:"Explain how World War I affected the United States and the world.",
     contentElaboration":"war mobilization and consequences",
@@ -646,12 +809,12 @@ const BANK = [
       "the disappearance of propaganda",
       "permanent isolation from world affairs"
     ],
-    answer:0,
+    answer:[0],
     explain:"World War I required large-scale federal economic and military mobilization."
   },
   {
     id:"D1S2-Q28",
-    type:"mcq",
+    type:"mc",
     cs:"CS 17",
     efl:"Explain how social and cultural tensions developed in the 1920s.",
     contentElaboration":"conflict over values",
@@ -662,12 +825,12 @@ const BANK = [
       "agreement on every social issue",
       "the end of urban-rural differences"
     ],
-    answer:0,
+    answer:[0],
     explain:"The 1920s featured strong conflict over modernism, tradition, and culture."
   },
   {
     id:"D1S2-Q29",
-    type:"mcq",
+    type:"mc",
     cs:"CS 19",
     efl:"Explain federal responses to the Great Depression.",
     contentElaboration":"New Deal expansion of federal role",
@@ -678,12 +841,12 @@ const BANK = [
       "It ended regulation permanently",
       "It restored complete laissez-faire policy"
     ],
-    answer:0,
+    answer:[0],
     explain:"The New Deal marked a major expansion of federal action in the economy."
   },
   {
     id:"D1S2-Q30",
-    type:"mcq",
+    type:"mc",
     cs:"CS 2",
     efl:"Develop a thesis and use evidence to support a position.",
     contentElaboration":"historical evidence and reasoning",
@@ -694,497 +857,697 @@ const BANK = [
       "a map of the Louisiana Purchase only",
       "a speech from the Constitutional Convention only"
     ],
-    answer:0,
+    answer:[0],
     explain:"The best evidence directly connects industrialization to city life and daily experience."
   }
 ];
 
-const state = {
+/* =========================
+   SEEDED SHUFFLE / HELPERS
+========================= */
+function hash32(str){
+  let h = 2166136261 >>> 0;
+  for(let i = 0; i < str.length; i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function mulberry32(a){
+  return function(){
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffleArray(arr, seedStr){
+  const a = arr.slice();
+  const rand = mulberry32(hash32(seedStr));
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function shuffleIndices(length, seedStr){
+  const arr = Array.from({length}, (_, i) => i);
+  const rand = mulberry32(hash32(seedStr));
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(rand() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function cloneQuestion(q){
+  return JSON.parse(JSON.stringify(q));
+}
+
+function remapQuestion(q, seedStr){
+  const question = cloneQuestion(q);
+
+  if(question.type === "mc" || question.type === "multiselect" || question.type === "dropdown" || question.type === "passage-mcq"){
+    if(Array.isArray(question.choices) && question.choices.length > 1){
+      const order = shuffleIndices(question.choices.length, seedStr);
+      const inverseMap = {};
+      order.forEach((oldIdx, newIdx) => inverseMap[oldIdx] = newIdx);
+      question.choices = order.map(i => question.choices[i]);
+      question.answer = question.answer.map(oldIdx => inverseMap[oldIdx]).sort((a,b)=>a-b);
+      question._choiceOrder = order;
+    }
+  }
+
+  if(question.type === "partab"){
+    if(Array.isArray(question.partA?.choices) && question.partA.choices.length > 1){
+      const orderA = shuffleIndices(question.partA.choices.length, `${seedStr}|partA`);
+      const inverseA = {};
+      orderA.forEach((oldIdx, newIdx) => inverseA[oldIdx] = newIdx);
+      question.partA.choices = orderA.map(i => question.partA.choices[i]);
+      question.partA.answer = question.partA.answer.map(oldIdx => inverseA[oldIdx]).sort((a,b)=>a-b);
+    }
+    if(Array.isArray(question.partB?.choices) && question.partB.choices.length > 1){
+      const orderB = shuffleIndices(question.partB.choices.length, `${seedStr}|partB`);
+      const inverseB = {};
+      orderB.forEach((oldIdx, newIdx) => inverseB[oldIdx] = newIdx);
+      question.partB.choices = orderB.map(i => question.partB.choices[i]);
+      question.partB.answer = question.partB.answer.map(oldIdx => inverseB[oldIdx]).sort((a,b)=>a-b);
+    }
+  }
+
+  return question;
+}
+
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, s => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[s]));
+}
+function nowLocalString(d){
+  return new Date(d).toLocaleString();
+}
+function formatRuntime(seconds){
+  const total = Math.max(0, Math.floor(seconds));
+  const h = Math.floor(total / 3600).toString().padStart(2,"0");
+  const m = Math.floor((total % 3600) / 60).toString().padStart(2,"0");
+  const s = Math.floor(total % 60).toString().padStart(2,"0");
+  return `${h}:${m}:${s}`;
+}
+function letter(i){
+  return ["A","B","C","D","E","F"][i] || "";
+}
+function normalizeArray(arr){
+  return Array.isArray(arr) ? [...arr].sort((a,b)=>a-b) : [];
+}
+function sameArray(a,b){
+  const aa = normalizeArray(a);
+  const bb = normalizeArray(b);
+  return aa.length === bb.length && aa.every((v,i)=>v===bb[i]);
+}
+
+/* =========================
+   STATE
+========================= */
+let QUESTIONS = [];
+
+let state = {
   studentName: "",
   startedAt: null,
-  currentIndex: 0,
-  answers: {},
-  completed: false,
+  current: 0,
+  answers: [],
   submitted: false,
-  questionOrder: [],
-  ticker: null
+  score: null,
+  attemptNumber: 1,
+  questionOrderSeed: null
 };
 
-function buildQuestionOrder(name, startedAt){
-  return shuffleSeeded(BANK.map(q => q.id), `${name}|${startedAt}|${TEST_NAME}`);
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
-function getQuestionById(id){ return BANK.find(q => q.id === id); }
-function getCurrentQuestion(){ return getQuestionById(state.questionOrder[state.currentIndex]); }
-function answeredCount(){ return Object.keys(state.answers).length; }
-function correctCount(){
-  return BANK.reduce((sum, q) => sum + ((state.answers[q.id] && state.answers[q.id].correct) ? 1 : 0), 0);
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && !parsed.submitted){
+        state = parsed;
+      }
+    }
+  }catch(err){}
 }
-function accuracyPct(){ return percent(correctCount(), answeredCount()); }
-
-function render(){
-  const app = document.getElementById("app");
-  if(!state.studentName || !state.startedAt){
-    app.innerHTML = renderStart();
-    bindStart();
-    return;
-  }
-  if(state.completed){
-    app.innerHTML = renderComplete();
-    bindComplete();
-    return;
-  }
-  app.innerHTML = renderQuestion();
-  bindQuestion();
+function isLocked(){
+  if(TEACHER_OVERRIDE) return false;
+  return localStorage.getItem(ATTEMPT_KEY) === "USED";
 }
-function renderStart(){
-  return `
-    <a class="back-link" href="../index.html">← Back to Hub</a>
-
-    <section class="hero">
-      <div class="kicker">LEGEND — AMERICAN STUDIES OST PRACTICE</div>
-      <h1>${TEST_NAME}</h1>
-      <p class="sub">
-        30 questions. Segment 2 emphasizes application, analysis, causation, comparison, and evidence interpretation.
-        Question types include MCQ, passage items, Part A/Part B, multi-select, dropdown, and matching.
-      </p>
-      <div class="pills">
-        <span class="pill">30 questions</span>
-        <span class="pill">Segment 2</span>
-        <span class="pill">Higher thinking</span>
-        <span class="pill">Apps Script connected</span>
-      </div>
-    </section>
-
-    <section class="game-panel">
-      <h2 style="margin-top:0;">Directions</h2>
-      <div class="prompt-box">
-        Enter your name to begin. Segment 2 uses more application and analysis than Segment 1.
-        Read each prompt carefully. Some questions require one answer, some require two selections,
-        and some use matching or Part A/Part B structures. When finished, click <strong>Submit Test</strong>.
-      </div>
-
-      <label class="inline-label" for="studentName">Student Name</label>
-      <input id="studentName" type="text" placeholder="Enter your name to begin" />
-
-      <div class="controls">
-        <button class="btn" id="beginBtn">Begin Test</button>
-        <a class="btn secondary" href="../index.html">Back to Hub</a>
-      </div>
-
-      <p class="tiny" style="margin-top:12px;">Progress in this browser will persist until you submit or restart.</p>
-    </section>
-  `;
+function teacherBadge(){
+  return TEACHER_OVERRIDE ? `<span class="pill">Teacher Override Active</span>` : ``;
 }
-function renderQuestion(){
-  const q = getCurrentQuestion();
-  const runtime = Math.floor((Date.now() - new Date(state.startedAt).getTime()) / 1000);
-  const answered = answeredCount();
-  const progress = percent(state.currentIndex, TOTAL_QUESTIONS);
-  const submitDisabled = answered === 0 ? "disabled" : "";
-
-  return `
-    <a class="back-link" href="../index.html">← Back to Hub</a>
-
-    <div class="topbar">
-      <span class="pill">Name: ${escapeHtml(state.studentName)}</span>
-      <span class="pill">Day: ${DAY_LABEL}</span>
-      <span class="pill">Segment: ${SEGMENT_LABEL}</span>
-      <span class="pill">Progress: ${Math.min(state.currentIndex + 1, TOTAL_QUESTIONS)} / ${TOTAL_QUESTIONS}</span>
-      <span class="pill">Answered: ${answered}</span>
-      <span class="pill">Accuracy: ${accuracyPct()}%</span>
-      <span class="pill">Runtime: <span id="runtimeText">${formatRuntime(runtime)}</span></span>
-      <button class="btn-lite submit-top" id="submitTopBtn" ${submitDisabled}>Submit Test</button>
-      <button class="btn-lite danger" id="restartTopBtn">Restart Test</button>
-    </div>
-
-    <section class="game-panel">
-      <div class="question-meta">
-        <span class="chip">${escapeHtml(q.cs)}</span>
-        <span class="chip">${escapeHtml(q.type)}</span>
-        <span class="chip">Question ${state.currentIndex + 1} of ${TOTAL_QUESTIONS}</span>
-      </div>
-
-      <div class="progress-wrap">
-        <div class="progress-bar" style="width:${progress}%"></div>
-      </div>
-
-      ${renderQuestionBody(q)}
-
-      <div class="feedback" id="feedbackBox"></div>
-
-      <div class="controls">
-        <button class="btn" id="checkBtn">Check Answer</button>
-        <button class="btn-lite" id="nextBtn" disabled>Next</button>
-        <button class="btn-lite danger" id="restartBtn">Restart Test</button>
-      </div>
-    </section>
-  `;
+function teacherUnlockNow(){
+  localStorage.removeItem(ATTEMPT_KEY);
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
 }
-function renderQuestionBody(q){
-  let html = `<div class="question-stem">${escapeHtml(q.stem)}</div>`;
-
-  if(q.passage){
-    html += `<div class="passage">${escapeHtml(q.passage)}</div>`;
+function countAnswered(){
+  return state.answers.filter(a => a !== null).length;
+}
+function buildQuestions(){
+  const seed = state.questionOrderSeed || "default-seed";
+  QUESTIONS = QUESTION_BANK.map((q, idx) => remapQuestion(q, `${seed}|${q.id || idx}|choices`));
+  QUESTIONS = shuffleArray(QUESTIONS, `${seed}|question-order`);
+  if(!Array.isArray(state.answers) || state.answers.length !== QUESTIONS.length){
+    state.answers = Array(QUESTIONS.length).fill(null);
   }
-  if(q.prompt){
-    html += `<div class="prompt-box">${escapeHtml(q.prompt)}</div>`;
+}
+
+/* =========================
+   ANSWER CHECKING
+========================= */
+function isCorrect(q, answer){
+  if(q.type === "mc" || q.type === "multiselect" || q.type === "dropdown" || q.type === "passage-mcq"){
+    return sameArray(answer, q.answer);
   }
-
-  if(q.type === "mcq" || q.type === "passage-mcq"){
-    html += `<div class="choices">`;
-    q.choices.forEach((c, i) => {
-      html += `<button class="choice-btn" data-choice="${i}"><strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}</button>`;
-    });
-    html += `</div>`;
-  }
-
-  if(q.type === "multiselect"){
-    html += `<div class="multi-note">Select all correct answers, then click Check Answer.</div><div class="choices">`;
-    q.choices.forEach((c, i) => {
-      html += `<button class="choice-btn multi" data-choice="${i}"><strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}</button>`;
-    });
-    html += `</div>`;
-  }
-
-  if(q.type === "dropdown"){
-    html += `
-      <label class="inline-label" for="dropdownAnswer">Choose one answer</label>
-      <select id="dropdownAnswer">
-        <option value="">-- Select an answer --</option>
-        ${q.options.map(opt => `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}</option>`).join("")}
-      </select>
-    `;
-  }
-
-  if(q.type === "partab"){
-    html += `
-      <div class="prompt-box"><strong>${escapeHtml(q.partA.stem)}</strong></div>
-      <div class="choices">
-        ${q.partA.choices.map((c, i) => `
-          <button class="choice-btn partA" data-part="A" data-choice="${i}">
-            <strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}
-          </button>`).join("")}
-      </div>
-
-      <div class="prompt-box" style="margin-top:14px;"><strong>${escapeHtml(q.partB.stem)}</strong></div>
-      <div class="choices">
-        ${q.partB.choices.map((c, i) => `
-          <button class="choice-btn partB" data-part="B" data-choice="${i}">
-            <strong>${String.fromCharCode(65+i)}.</strong> ${escapeHtml(c)}
-          </button>`).join("")}
-      </div>
-    `;
-  }
-
   if(q.type === "matching"){
-    html += `<div class="multi-note">Use the dropdowns to match each item.</div><div class="matching-grid">`;
-    q.left.forEach((leftText, idx) => {
-      html += `
-        <div class="match-row">
-          <div class="inline-label">${idx + 1}. ${escapeHtml(leftText)}</div>
-          <select class="match-select" data-index="${idx}">
-            <option value="">-- Match to result --</option>
-            ${q.right.map((r, ridx) => `<option value="${ridx}">${escapeHtml(r)}</option>`).join("")}
-          </select>
-        </div>
-      `;
-    });
-    html += `</div>`;
+    return sameArray(answer, q.answer);
   }
-
-  return html;
+  if(q.type === "partab"){
+    if(!answer || !Array.isArray(answer.partA) || !Array.isArray(answer.partB)) return false;
+    return sameArray(answer.partA, q.partA.answer) && sameArray(answer.partB, q.partB.answer);
+  }
+  return false;
 }
-function renderComplete(){
-  const started = new Date(state.startedAt);
-  const submitted = new Date();
-  const runtime = Math.floor((submitted.getTime() - started.getTime()) / 1000);
-  const score = correctCount();
-  const acc = percent(score, TOTAL_QUESTIONS);
-  const result = acc >= 80 ? "PASSING PRACTICE" : "RETEACH NEEDED";
 
-  return `
+function currentAnswerLabel(q, ans){
+  if(ans === null) return "No answer";
+
+  if(q.type === "mc" || q.type === "multiselect" || q.type === "dropdown" || q.type === "passage-mcq"){
+    return ans.map(i => letter(i)).join(", ");
+  }
+  if(q.type === "matching"){
+    return "Answered";
+  }
+  if(q.type === "partab"){
+    const a = (ans.partA || []).map(i => letter(i)).join(", ");
+    const b = (ans.partB || []).map(i => letter(i)).join(", ");
+    return `Part A: ${a || "-"} | Part B: ${b || "-"}`;
+  }
+  return "Answered";
+}
+
+/* =========================
+   RENDER
+========================= */
+function buildLockedScreen(){
+  document.getElementById("app").innerHTML = `
     <a class="back-link" href="../index.html">← Back to Hub</a>
-
-    <section class="hero">
-      <div class="kicker">Submission Ticket</div>
-      <h1>${TEST_NAME} Complete</h1>
-      <p class="sub">Results have ${state.submitted ? "been submitted to the spreadsheet" : "not been submitted successfully yet"}.</p>
-    </section>
-
-    <section class="game-panel">
-      <div class="ticket">
-        <div><strong>Name:</strong> ${escapeHtml(state.studentName)}</div>
-        <div><strong>Date:</strong> ${new Date().toLocaleDateString()}</div>
-        <div><strong>Started:</strong> ${formatDateTime(started)}</div>
-        <div><strong>Submitted:</strong> ${formatDateTime(submitted)}</div>
-        <div><strong>Runtime:</strong> ${formatRuntime(runtime)}</div>
-        <div><strong>Score:</strong> ${score} / ${TOTAL_QUESTIONS}</div>
-        <div><strong>Accuracy:</strong> ${acc}%</div>
-        <div><strong>Result:</strong> ${result}</div>
+    <div class="panel">
+      <div class="kicker">Attempt Locked</div>
+      <h1>${TEST_META.title}</h1>
+      <p class="sub">This segment has already been completed on this device/browser.</p>
+      <div class="footer-actions">
+        ${TEACHER_OVERRIDE ? `<button class="warn" onclick="teacherUnlockNow()">Teacher Unlock This Browser</button>` : ``}
+        <button onclick="location.href='../index.html'">Back to Hub</button>
       </div>
-
-      <div class="controls">
-        <button class="btn-lite danger" id="restartAfterBtn">Restart Test</button>
-        <a class="btn secondary" href="../index.html">Back to Hub</a>
-      </div>
-    </section>
+    </div>
   `;
 }
 
-function bindStart(){
-  document.getElementById("beginBtn").addEventListener("click", () => {
-    const name = document.getElementById("studentName").value.trim();
+function buildIntro(){
+  document.getElementById("app").innerHTML = `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+    <div class="panel name-card">
+      <div class="kicker">Legend Mastery Series • American Studies</div>
+      <h1>${TEST_META.title}</h1>
+      <p class="sub">30-question OST-style segment. Name is required to begin. One attempt only.</p>
+      <input id="nameInput" class="input" type="text" maxlength="60" placeholder="Enter your name to begin" />
+      <div class="help">
+        This is a locked test shell. Questions and answer choices are shuffled for test realism. There is no student restart.
+      </div>
+      <div class="footer-actions">
+        ${TEACHER_OVERRIDE ? `<span class="tag">Teacher Override Active</span>` : ``}
+        <button id="startBtn">Start Test</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("startBtn").onclick = () => {
+    const name = document.getElementById("nameInput").value.trim();
     if(!name){
       alert("Enter your name to begin.");
       return;
     }
     state.studentName = name;
     state.startedAt = new Date().toISOString();
-    state.currentIndex = 0;
-    state.answers = {};
-    state.completed = false;
-    state.submitted = false;
-    state.questionOrder = buildQuestionOrder(name, state.startedAt);
-    saveState();
-    render();
-    startTicker();
-  });
-}
-function bindComplete(){
-  document.getElementById("restartAfterBtn").addEventListener("click", hardRestart);
-}
-function bindQuestion(){
-  const q = getCurrentQuestion();
-
-  document.getElementById("restartTopBtn").addEventListener("click", hardRestart);
-  document.getElementById("restartBtn").addEventListener("click", hardRestart);
-
-  const submitTopBtn = document.getElementById("submitTopBtn");
-  if(submitTopBtn){
-    submitTopBtn.addEventListener("click", async () => {
-      if(answeredCount() === 0) return;
-      const ok = confirm("Submit the test now? Any unanswered questions will count as incorrect.");
-      if(!ok) return;
-      await finalizeSubmission();
-    });
-  }
-
-  if(q.type === "mcq" || q.type === "passage-mcq"){
-    document.querySelectorAll(".choice-btn[data-choice]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".choice-btn[data-choice]").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-      });
-    });
-  }
-
-  if(q.type === "multiselect"){
-    document.querySelectorAll(".choice-btn.multi").forEach(btn => {
-      btn.addEventListener("click", () => btn.classList.toggle("selected"));
-    });
-  }
-
-  if(q.type === "partab"){
-    document.querySelectorAll(".choice-btn.partA").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".choice-btn.partA").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-      });
-    });
-    document.querySelectorAll(".choice-btn.partB").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".choice-btn.partB").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-      });
-    });
-  }
-
-  document.getElementById("checkBtn").addEventListener("click", () => handleCheck(q));
-  document.getElementById("nextBtn").addEventListener("click", async () => {
-    if(state.currentIndex < TOTAL_QUESTIONS - 1){
-      state.currentIndex++;
-      saveState();
-      render();
-    }else{
-      await finalizeSubmission();
-    }
-  });
-
-  startTicker();
+    state.attemptNumber = 1;
+    state.questionOrderSeed = `${state.studentName}|${state.startedAt}|${TEST_META.title}`;
+    buildQuestions();
+    save();
+    renderTest();
+  };
 }
 
-function showFeedback(ok, html){
-  const box = document.getElementById("feedbackBox");
-  box.className = `feedback show ${ok ? "good" : "bad"}`;
-  box.innerHTML = html;
+function confirmReviewOpen(){
+  const ok = confirm("Open the review screen? From there, students can inspect answers and submit the segment.");
+  if(ok) reviewScreen();
 }
-function lockQuestion(){
-  document.querySelectorAll(".choice-btn, select").forEach(el => el.disabled = true);
-  document.getElementById("checkBtn").disabled = true;
-  document.getElementById("nextBtn").disabled = false;
-}
-function markSingleChoices(correctIndex, selectedIndex){
-  document.querySelectorAll(".choice-btn[data-choice]").forEach(btn => {
-    const i = Number(btn.dataset.choice);
-    if(i === correctIndex) btn.classList.add("correct");
-    if(i === selectedIndex && i !== correctIndex) btn.classList.add("incorrect");
-  });
-}
-function arraysEqualUnordered(a,b){
-  if(a.length !== b.length) return false;
-  const sa = [...a].sort((x,y)=>x-y);
-  const sb = [...b].sort((x,y)=>x-y);
-  return sa.every((v,i)=>v===sb[i]);
-}
-function handleCheck(q){
-  let correct = false;
-  let responseData = null;
 
-  if(q.type === "mcq" || q.type === "passage-mcq"){
-    const selected = document.querySelector(".choice-btn.selected");
-    if(!selected){ alert("Choose an answer."); return; }
-    const idx = Number(selected.dataset.choice);
-    correct = idx === q.answer;
-    responseData = { selected: idx };
-    markSingleChoices(q.answer, idx);
+function buildTopbar(){
+  const started = new Date(state.startedAt);
+  const runtime = formatRuntime((Date.now() - started.getTime()) / 1000);
+  const answered = countAnswered();
+  const progressPct = Math.round((answered / QUESTIONS.length) * 100);
+
+  return `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+    <div class="topbar">
+      <div class="topbar-left">
+        ${TEACHER_OVERRIDE ? `<button class="warn" onclick="teacherUnlockNow()">Teacher Unlock</button>` : ``}
+      </div>
+      <div class="topbar-right">
+        <button class="secondary" onclick="confirmReviewOpen()">Open Review Screen</button>
+        ${teacherBadge()}
+        <span class="pill">Name: ${escapeHtml(state.studentName)}</span>
+        <span class="pill">Attempt: ${state.attemptNumber}</span>
+        <span class="pill">Started: ${escapeHtml(nowLocalString(started))}</span>
+        <span class="pill">Runtime: <span id="runtimeDisplay">${runtime}</span></span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Test</div><div class="stat-value">${TEST_META.day} ${TEST_META.segment}</div></div>
+        <div class="stat"><div class="stat-label">Focus</div><div class="stat-value">${TEST_META.focus}</div></div>
+        <div class="stat"><div class="stat-label">Progress</div><div class="stat-value">${answered} / ${QUESTIONS.length}</div></div>
+        <div class="stat"><div class="stat-label">Completion</div><div class="stat-value">${progressPct}%</div></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${progressPct}%"></div></div>
+    </div>
+  `;
+}
+
+function renderQuestion(){
+  const q = QUESTIONS[state.current];
+  const currentAnswer = state.answers[state.current];
+
+  document.getElementById("app").innerHTML = buildTopbar() + `
+    <div class="panel question-card">
+      <div class="q-type">Question ${state.current + 1} of ${QUESTIONS.length} • ${escapeHtml(q.type.toUpperCase())} • ${escapeHtml(q.cs)}</div>
+      ${q.passage ? `<div class="passage">${escapeHtml(q.passage)}</div>` : ``}
+      ${q.prompt ? `<div class="prompt-box">${escapeHtml(q.prompt)}</div>` : ``}
+      <div class="q-stem">${escapeHtml(q.stem)}</div>
+      ${renderInputForQuestion(q, currentAnswer)}
+      <div class="footer-actions">
+        <button class="secondary" ${state.current === 0 ? "disabled" : ""} onclick="prevQuestion()">Previous</button>
+        <button class="secondary" onclick="skipQuestion()">Skip</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderInputForQuestion(q, currentAnswer){
+  if(q.type === "mc" || q.type === "passage-mcq"){
+    return `
+      <div class="choices">
+        ${q.choices.map((choice, i) => `
+          <button class="choice ${currentAnswer !== null && currentAnswer[0] === i ? "selected" : ""}" onclick="selectMc(${i})">
+            <span class="choice-letter">${letter(i)}.</span> ${escapeHtml(choice)}
+          </button>
+        `).join("")}
+      </div>
+    `;
   }
 
   if(q.type === "multiselect"){
-    const selected = [...document.querySelectorAll(".choice-btn.multi.selected")].map(b => Number(b.dataset.choice));
-    if(!selected.length){ alert("Select your answer choices."); return; }
-    correct = arraysEqualUnordered(selected, q.answers);
-    responseData = { selected };
-    document.querySelectorAll(".choice-btn.multi").forEach(btn => {
-      const i = Number(btn.dataset.choice);
-      if(q.answers.includes(i)) btn.classList.add("correct");
-      if(selected.includes(i) && !q.answers.includes(i)) btn.classList.add("incorrect");
-    });
+    const selected = Array.isArray(currentAnswer) ? currentAnswer : [];
+    return `
+      <div class="help">Select all correct answers.</div>
+      <div class="choices">
+        ${q.choices.map((choice, i) => `
+          <button class="choice ${selected.includes(i) ? "selected" : ""}" onclick="toggleMulti(${i})">
+            <span class="choice-letter">${letter(i)}.</span> ${escapeHtml(choice)}
+          </button>
+        `).join("")}
+      </div>
+      <div class="footer-actions" style="margin-top:12px;">
+        <button onclick="commitMulti()">Save Answer</button>
+      </div>
+    `;
   }
 
   if(q.type === "dropdown"){
-    const selected = document.getElementById("dropdownAnswer").value;
-    if(!selected){ alert("Choose an answer."); return; }
-    correct = selected === q.answer;
-    responseData = { selected };
-  }
-
-  if(q.type === "partab"){
-    const a = document.querySelector(".choice-btn.partA.selected");
-    const b = document.querySelector(".choice-btn.partB.selected");
-    if(!a || !b){ alert("Answer both Part A and Part B."); return; }
-    const aIdx = Number(a.dataset.choice);
-    const bIdx = Number(b.dataset.choice);
-    correct = aIdx === q.partA.answer && bIdx === q.partB.answer;
-    responseData = { partA:aIdx, partB:bIdx };
-
-    document.querySelectorAll(".choice-btn.partA").forEach(btn => {
-      const i = Number(btn.dataset.choice);
-      if(i === q.partA.answer) btn.classList.add("correct");
-      if(i === aIdx && i !== q.partA.answer) btn.classList.add("incorrect");
-    });
-    document.querySelectorAll(".choice-btn.partB").forEach(btn => {
-      const i = Number(btn.dataset.choice);
-      if(i === q.partB.answer) btn.classList.add("correct");
-      if(i === bIdx && i !== q.partB.answer) btn.classList.add("incorrect");
-    });
+    const selected = Array.isArray(currentAnswer) && currentAnswer.length ? currentAnswer[0] : "";
+    return `
+      <label class="inline-label" for="dropdownAnswer">Choose one answer</label>
+      <select id="dropdownAnswer" class="input">
+        <option value="">-- Select an answer --</option>
+        ${q.choices.map((choice, i) => `<option value="${i}" ${String(selected)===String(i) ? "selected" : ""}>${escapeHtml(choice)}</option>`).join("")}
+      </select>
+      <div class="footer-actions" style="margin-top:12px;">
+        <button onclick="commitDropdown()">Save Answer</button>
+      </div>
+    `;
   }
 
   if(q.type === "matching"){
-    const selected = [...document.querySelectorAll(".match-select")].map(s => s.value === "" ? "" : Number(s.value));
-    if(selected.some(v => v === "")){ alert("Complete all matches."); return; }
-    correct = selected.every((v, i) => v === q.answers[i]);
-    responseData = { selected };
+    const selected = Array.isArray(currentAnswer) ? currentAnswer : Array(q.left.length).fill("");
+    return `
+      <div class="matching-grid">
+        ${q.left.map((leftText, idx) => `
+          <div class="match-row">
+            <div class="inline-label">${idx + 1}. ${escapeHtml(leftText)}</div>
+            <select class="input" id="match_${idx}">
+              <option value="">-- Match --</option>
+              ${q.right.map((r, ridx) => `
+                <option value="${ridx}" ${String(selected[idx])===String(ridx) ? "selected" : ""}>${escapeHtml(r)}</option>
+              `).join("")}
+            </select>
+          </div>
+        `).join("")}
+      </div>
+      <div class="footer-actions" style="margin-top:12px;">
+        <button onclick="commitMatching()">Save Answer</button>
+      </div>
+    `;
   }
 
-  state.answers[q.id] = { correct, responseData };
-  saveState();
+  if(q.type === "partab"){
+    const selectedA = currentAnswer?.partA || [];
+    const selectedB = currentAnswer?.partB || [];
+    return `
+      <div class="prompt-box"><strong>${escapeHtml(q.partA.stem)}</strong></div>
+      <div class="choices">
+        ${q.partA.choices.map((choice, i) => `
+          <button class="choice ${selectedA.includes(i) ? "selected" : ""}" onclick="selectPart('A', ${i})">
+            <span class="choice-letter">${letter(i)}.</span> ${escapeHtml(choice)}
+          </button>
+        `).join("")}
+      </div>
 
-  showFeedback(correct, `<strong>${correct ? "Correct." : "Incorrect."}</strong> ${escapeHtml(q.explain)}`);
-  lockQuestion();
+      <div class="prompt-box" style="margin-top:14px;"><strong>${escapeHtml(q.partB.stem)}</strong></div>
+      <div class="choices">
+        ${q.partB.choices.map((choice, i) => `
+          <button class="choice ${selectedB.includes(i) ? "selected" : ""}" onclick="selectPart('B', ${i})">
+            <span class="choice-letter">${letter(i)}.</span> ${escapeHtml(choice)}
+          </button>
+        `).join("")}
+      </div>
+
+      <div class="footer-actions" style="margin-top:12px;">
+        <button onclick="commitPartAB()">Save Answer</button>
+      </div>
+    `;
+  }
+
+  return `<div class="help">Unsupported question type.</div>`;
 }
 
-function buildSubmissionPayload(){
-  const submittedAt = new Date().toISOString();
-  const runtimeSeconds = Math.floor((Date.now() - new Date(state.startedAt).getTime()) / 1000);
-  const questions = BANK.map(q => {
-    const rec = state.answers[q.id];
-    return {
+function renderTest(){
+  if(state.current < 0) state.current = 0;
+  if(state.current >= QUESTIONS.length) state.current = QUESTIONS.length - 1;
+  renderQuestion();
+}
+
+/* =========================
+   ANSWER INTERACTION
+========================= */
+function selectMc(i){
+  state.answers[state.current] = [i];
+  save();
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    confirmReviewOpen();
+  }
+}
+
+function toggleMulti(i){
+  const current = Array.isArray(state.answers[state.current]) ? [...state.answers[state.current]] : [];
+  if(current.includes(i)){
+    state.answers[state.current] = current.filter(v => v !== i).sort((a,b)=>a-b);
+  }else{
+    state.answers[state.current] = [...current, i].sort((a,b)=>a-b);
+  }
+  save();
+  renderQuestion();
+}
+
+function commitMulti(){
+  if(!Array.isArray(state.answers[state.current]) || !state.answers[state.current].length){
+    alert("Select at least one answer.");
+    return;
+  }
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    confirmReviewOpen();
+  }
+}
+
+function commitDropdown(){
+  const el = document.getElementById("dropdownAnswer");
+  if(!el || el.value === ""){
+    alert("Choose an answer.");
+    return;
+  }
+  state.answers[state.current] = [Number(el.value)];
+  save();
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    confirmReviewOpen();
+  }
+}
+
+function commitMatching(){
+  const q = QUESTIONS[state.current];
+  const ans = [];
+  for(let i=0;i<q.left.length;i++){
+    const el = document.getElementById(`match_${i}`);
+    if(!el || el.value === ""){
+      alert("Complete all matches.");
+      return;
+    }
+    ans.push(Number(el.value));
+  }
+  state.answers[state.current] = ans;
+  save();
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    confirmReviewOpen();
+  }
+}
+
+function selectPart(which, i){
+  const current = state.answers[state.current] || { partA: [], partB: [] };
+  const next = {
+    partA: [...(current.partA || [])],
+    partB: [...(current.partB || [])]
+  };
+  if(which === "A") next.partA = [i];
+  if(which === "B") next.partB = [i];
+  state.answers[state.current] = next;
+  save();
+  renderQuestion();
+}
+
+function commitPartAB(){
+  const current = state.answers[state.current];
+  if(!current || !Array.isArray(current.partA) || !current.partA.length || !Array.isArray(current.partB) || !current.partB.length){
+    alert("Answer both Part A and Part B.");
+    return;
+  }
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    confirmReviewOpen();
+  }
+}
+
+function prevQuestion(){
+  if(state.current > 0){
+    state.current--;
+    save();
+    renderQuestion();
+  }
+}
+
+function skipQuestion(){
+  if(state.current < QUESTIONS.length - 1){
+    state.current++;
+    save();
+    renderQuestion();
+  }else{
+    confirmReviewOpen();
+  }
+}
+
+function jumpToQuestion(idx){
+  state.current = idx;
+  save();
+  renderQuestion();
+}
+
+/* =========================
+   REVIEW / SUBMIT
+========================= */
+function reviewScreen(){
+  const answered = countAnswered();
+  const unanswered = QUESTIONS.length - answered;
+
+  document.getElementById("app").innerHTML = buildTopbar() + `
+    <div class="panel">
+      <h2>Review Before Submitting</h2>
+      <p class="sub">Answered: ${answered} of ${QUESTIONS.length}. Unanswered: ${unanswered}.</p>
+      <div class="review-box">
+        ${QUESTIONS.map((q, idx) => `
+          <div class="review-item">
+            <div class="review-top">
+              <strong>Q${String(idx + 1).padStart(2,"0")}</strong>
+              <span class="tag">${escapeHtml(q.cs)}</span>
+            </div>
+            <div class="muted">${escapeHtml(q.stem)}</div>
+            <div style="margin-top:8px;">
+              ${state.answers[idx] === null
+                ? `<span class="tag">No answer</span>`
+                : `<span class="tag">Answered: ${escapeHtml(currentAnswerLabel(q, state.answers[idx]))}</span>`
+              }
+            </div>
+            <div class="footer-actions">
+              <button class="secondary" onclick="jumpToQuestion(${idx})">Go to Question</button>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+      <hr class="sep">
+      <div class="footer-actions">
+        <button class="secondary" onclick="renderQuestion()">Back to Test</button>
+        <button onclick="submitTest()">Submit Segment</button>
+      </div>
+    </div>
+  `;
+}
+
+async function submitTest(){
+  if(state.submitted) return;
+
+  const endedAt = new Date().toISOString();
+  const score = QUESTIONS.reduce((sum, q, idx) => sum + (isCorrect(q, state.answers[idx]) ? 1 : 0), 0);
+  const accuracy = Math.round((score / QUESTIONS.length) * 100);
+
+  const payload = {
+    studentName: state.studentName,
+    day: TEST_META.day,
+    segment: TEST_META.segment,
+    score,
+    total: QUESTIONS.length,
+    accuracy,
+    questions: QUESTIONS.map((q, idx) => ({
       id: q.id,
       type: q.type,
       cs: q.cs,
-      efl: q.efl,
-      contentElaboration: q.contentElaboration,
-      correct: !!(rec && rec.correct)
-    };
-  });
-  const score = correctCount();
-
-  return {
-    studentName: state.studentName,
-    testName: TEST_NAME,
-    day: DAY_LABEL,
-    segment: SEGMENT_LABEL,
-    startedAt: state.startedAt,
-    submittedAt,
-    runtimeSeconds,
-    score,
-    total: TOTAL_QUESTIONS,
-    accuracy: TOTAL_QUESTIONS ? score / TOTAL_QUESTIONS : 0,
-    questions
+      efl: q.efl || "",
+      contentElaboration: q.contentElaboration || "",
+      correct: isCorrect(q, state.answers[idx]) ? 1 : 0
+    }))
   };
-}
-async function finalizeSubmission(){
-  state.completed = true;
+
   try{
-    const payload = buildSubmissionPayload();
-    const res = await fetch(WEB_APP_URL, {
-      method:"POST",
-      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
-    const data = await res.json().catch(() => ({}));
-    state.submitted = !!data.ok;
+    const text = await res.text();
+    let parsed = {};
+    try { parsed = JSON.parse(text); } catch(err) {}
+    if(parsed && parsed.ok === false){
+      alert(parsed.message || "Submission failed.");
+      return;
+    }
   }catch(err){
-    state.submitted = false;
+    alert("Submission did not reach the spreadsheet. Check the Apps Script URL and deployment settings, then try again.");
+    return;
   }
-  saveState();
-  render();
+
+  if(!TEACHER_OVERRIDE){
+    localStorage.setItem(ATTEMPT_KEY, "USED");
+  }
+
+  state.submitted = true;
+  state.score = score;
+  save();
+
+  document.getElementById("app").innerHTML = `
+    <a class="back-link" href="../index.html">← Back to Hub</a>
+    <div class="panel">
+      <div class="kicker">Submission Complete</div>
+      <h1>${TEST_META.title}</h1>
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Name</div><div class="stat-value">${escapeHtml(state.studentName)}</div></div>
+        <div class="stat"><div class="stat-label">Attempt</div><div class="stat-value">${state.attemptNumber}</div></div>
+        <div class="stat"><div class="stat-label">Date</div><div class="stat-value">${escapeHtml(new Date(endedAt).toLocaleDateString())}</div></div>
+        <div class="stat"><div class="stat-label">Start</div><div class="stat-value">${escapeHtml(nowLocalString(state.startedAt))}</div></div>
+        <div class="stat"><div class="stat-label">End</div><div class="stat-value">${escapeHtml(nowLocalString(endedAt))}</div></div>
+        <div class="stat"><div class="stat-label">Runtime</div><div class="stat-value">${formatRuntime((new Date(endedAt) - new Date(state.startedAt)) / 1000)}</div></div>
+        <div class="stat"><div class="stat-label">Score</div><div class="stat-value">${score} / ${QUESTIONS.length}</div></div>
+        <div class="stat"><div class="stat-label">Accuracy</div><div class="stat-value">${accuracy}%</div></div>
+        <div class="stat"><div class="stat-label">Result</div><div class="stat-value ${accuracy >= 80 ? "result-ready" : "result-review"}">${accuracy >= 80 ? "READY" : "REVIEW"}</div></div>
+      </div>
+      <div class="footer-actions">
+        ${TEACHER_OVERRIDE ? `<button class="warn" onclick="teacherUnlockNow()">Teacher Unlock This Browser</button>` : ``}
+        <button onclick="location.href='../index.html'">Back to Hub</button>
+      </div>
+    </div>
+  `;
+
+  localStorage.removeItem(STORAGE_KEY);
 }
 
-function startTicker(){
-  if(state.ticker) clearInterval(state.ticker);
-  const runtimeNode = document.getElementById("runtimeText");
-  if(!runtimeNode) return;
-  state.ticker = setInterval(() => {
-    const sec = Math.floor((Date.now() - new Date(state.startedAt).getTime()) / 1000);
-    const node = document.getElementById("runtimeText");
-    if(node) node.textContent = formatRuntime(sec);
-  }, 1000);
-}
-function boot(){
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if(saved){
-    try{
-      const parsed = JSON.parse(saved);
-      if(parsed && parsed.studentName && parsed.startedAt){
-        state.studentName = parsed.studentName;
-        state.startedAt = parsed.startedAt;
-        state.currentIndex = parsed.currentIndex || 0;
-        state.answers = parsed.answers || {};
-        state.completed = !!parsed.completed;
-        state.submitted = !!parsed.submitted;
-        state.questionOrder = Array.isArray(parsed.questionOrder) && parsed.questionOrder.length === TOTAL_QUESTIONS
-          ? parsed.questionOrder
-          : buildQuestionOrder(parsed.studentName, parsed.startedAt);
-      }
-    }catch(err){}
+/* =========================
+   TICKER / BOOT
+========================= */
+function tick(){
+  const el = document.getElementById("runtimeDisplay");
+  if(el && state.startedAt){
+    el.textContent = formatRuntime((Date.now() - new Date(state.startedAt).getTime()) / 1000);
   }
-  render();
 }
-window.addEventListener("pageshow", e => {
-  if(e.persisted) boot();
-});
-boot();
+
+load();
+if(isLocked()){
+  buildLockedScreen();
+}else if(!state.studentName || !state.startedAt){
+  buildIntro();
+}else{
+  buildQuestions();
+  renderTest();
+}
+setInterval(tick, 1000);
+
+/* expose handlers */
+window.prevQuestion = prevQuestion;
+window.skipQuestion = skipQuestion;
+window.reviewScreen = reviewScreen;
+window.confirmReviewOpen = confirmReviewOpen;
+window.jumpToQuestion = jumpToQuestion;
+window.selectMc = selectMc;
+window.toggleMulti = toggleMulti;
+window.commitMulti = commitMulti;
+window.commitDropdown = commitDropdown;
+window.commitMatching = commitMatching;
+window.selectPart = selectPart;
+window.commitPartAB = commitPartAB;
+window.submitTest = submitTest;
+window.teacherUnlockNow = teacherUnlockNow;
 </script>
 </body>
 </html>
