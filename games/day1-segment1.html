@@ -5,6 +5,292 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>American Studies Test Week — Day 1 Segment 1</title>
   <link rel="stylesheet" href="../styles.css" />
+  <style>
+    :root{
+      --bg:#071226;
+      --panel:#0b1730;
+      --panel2:#0e1d3b;
+      --line:#23365c;
+      --text:#eaf2ff;
+      --muted:#a9bbdd;
+      --accent:#79a9ff;
+      --warn:#f4b740;
+      --good:#4fd18b;
+      --bad:#ff7b7b;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:radial-gradient(circle at top, #0b1b3d 0%, #061124 65%, #040b19 100%);
+      color:var(--text);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    body{min-height:100vh}
+
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:20px 16px 40px;
+    }
+
+    .back-link{
+      display:inline-block;
+      color:#9db8ff;
+      text-decoration:none;
+      font-weight:700;
+      margin-bottom:10px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .topbar-left,
+    .topbar-right{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .pill,.tag{
+      border:1px solid var(--line);
+      background:#081326;
+      color:var(--text);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .panel{
+      background:rgba(8,19,38,.92);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:14px;
+      box-shadow:0 8px 24px rgba(0,0,0,.28);
+    }
+
+    .name-card{
+      max-width:760px;
+      margin:24px auto 0;
+    }
+
+    .kicker{
+      color:#8eb1ff;
+      font-size:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:8px;
+    }
+
+    h1,h2{
+      margin:0 0 10px;
+      line-height:1.2;
+    }
+
+    .sub,.help,.muted{
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .input{
+      width:100%;
+      min-height:44px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#071222;
+      color:var(--text);
+      padding:10px 12px;
+      font-size:16px;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .stat{
+      background:#081326;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+
+    .stat-value{
+      font-size:18px;
+      font-weight:800;
+      color:var(--text);
+    }
+
+    .progress-wrap{
+      margin-top:12px;
+      width:100%;
+      height:12px;
+      border-radius:999px;
+      background:#071222;
+      border:1px solid var(--line);
+      overflow:hidden;
+    }
+
+    .progress-bar{
+      height:100%;
+      background:linear-gradient(90deg,#6ea2ff,#9bc2ff);
+    }
+
+    .question-card{
+      margin-top:4px;
+    }
+
+    .q-type{
+      color:#9db8ff;
+      font-size:13px;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+
+    .q-stem{
+      font-size:22px;
+      line-height:1.35;
+      font-weight:800;
+      margin-bottom:16px;
+    }
+
+    .prompt-box,.passage{
+      background:#081326;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:14px;
+      line-height:1.6;
+    }
+
+    .choices{
+      display:grid;
+      gap:10px;
+    }
+
+    .choice{
+      width:100%;
+      text-align:left;
+      border:1px solid var(--line);
+      background:#071222;
+      color:var(--text);
+      border-radius:12px;
+      padding:12px 14px;
+      min-height:50px;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .choice:hover{border-color:#5f8fff}
+    .choice.selected{
+      background:#11254b;
+      border-color:#79a9ff;
+    }
+
+    .choice-letter{
+      display:inline-block;
+      min-width:28px;
+      color:#aecdff;
+    }
+
+    .footer-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:14px;
+    }
+
+    button{
+      min-height:42px;
+      border:none;
+      border-radius:12px;
+      padding:10px 14px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      background:#7ea9ff;
+      color:#071426;
+    }
+
+    button.secondary{
+      background:#1a2d52;
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    button.warn{
+      background:#f4b740;
+      color:#2a1b00;
+    }
+
+    button:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
+    .review-box{
+      display:grid;
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .review-item{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background:#081326;
+    }
+
+    .review-top{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      margin-bottom:8px;
+    }
+
+    .sep{
+      border:none;
+      border-top:1px solid var(--line);
+      margin:16px 0;
+    }
+
+    .result-ready{color:var(--good)}
+    .result-review{color:var(--warn)}
+
+    @media (max-width: 760px){
+      .stats{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+      .q-stem{
+        font-size:18px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="wrap" id="app"></div>
@@ -670,9 +956,6 @@ function teacherUnlockNow(){
 function countAnswered(){
   return state.answers.filter(a => a !== null).length;
 }
-function totalQuestions(){
-  return QUESTIONS.length;
-}
 function buildQuestions(){
   const seed = state.questionOrderSeed || "default-seed";
   QUESTIONS = QUESTION_BANK.map((q, idx) => remapQuestion(q, `${seed}|${q.id || idx}|choices`));
@@ -722,7 +1005,7 @@ function currentAnswerLabel(q, ans){
 function buildLockedScreen(){
   document.getElementById("app").innerHTML = `
     <a class="back-link" href="../index.html">← Back to Hub</a>
-    <div class="panel lock-box">
+    <div class="panel">
       <div class="kicker">Attempt Locked</div>
       <h1>${TEST_META.title}</h1>
       <p class="sub">This segment has already been completed on this device/browser.</p>
@@ -768,6 +1051,11 @@ function buildIntro(){
   };
 }
 
+function confirmReviewOpen(){
+  const ok = confirm("Open the review screen? From there, students can inspect answers and submit the segment.");
+  if(ok) reviewScreen();
+}
+
 function buildTopbar(){
   const started = new Date(state.startedAt);
   const runtime = formatRuntime((Date.now() - started.getTime()) / 1000);
@@ -781,6 +1069,7 @@ function buildTopbar(){
         ${TEACHER_OVERRIDE ? `<button class="warn" onclick="teacherUnlockNow()">Teacher Unlock</button>` : ``}
       </div>
       <div class="topbar-right">
+        <button class="secondary" onclick="confirmReviewOpen()">Open Review Screen</button>
         ${teacherBadge()}
         <span class="pill">Name: ${escapeHtml(state.studentName)}</span>
         <span class="pill">Attempt: ${state.attemptNumber}</span>
@@ -814,7 +1103,6 @@ function renderQuestion(){
       <div class="footer-actions">
         <button class="secondary" ${state.current === 0 ? "disabled" : ""} onclick="prevQuestion()">Previous</button>
         <button class="secondary" onclick="skipQuestion()">Skip</button>
-        <button class="warn" onclick="reviewScreen()">Review / Submit</button>
       </div>
     </div>
   `;
@@ -934,7 +1222,7 @@ function selectMc(i){
     save();
     renderQuestion();
   }else{
-    reviewScreen();
+    confirmReviewOpen();
   }
 }
 
@@ -959,7 +1247,7 @@ function commitMulti(){
     save();
     renderQuestion();
   }else{
-    reviewScreen();
+    confirmReviewOpen();
   }
 }
 
@@ -976,7 +1264,7 @@ function commitDropdown(){
     save();
     renderQuestion();
   }else{
-    reviewScreen();
+    confirmReviewOpen();
   }
 }
 
@@ -998,7 +1286,7 @@ function commitMatching(){
     save();
     renderQuestion();
   }else{
-    reviewScreen();
+    confirmReviewOpen();
   }
 }
 
@@ -1026,7 +1314,7 @@ function commitPartAB(){
     save();
     renderQuestion();
   }else{
-    reviewScreen();
+    confirmReviewOpen();
   }
 }
 
@@ -1044,7 +1332,7 @@ function skipQuestion(){
     save();
     renderQuestion();
   }else{
-    reviewScreen();
+    confirmReviewOpen();
   }
 }
 
@@ -1192,6 +1480,7 @@ setInterval(tick, 1000);
 window.prevQuestion = prevQuestion;
 window.skipQuestion = skipQuestion;
 window.reviewScreen = reviewScreen;
+window.confirmReviewOpen = confirmReviewOpen;
 window.jumpToQuestion = jumpToQuestion;
 window.selectMc = selectMc;
 window.toggleMulti = toggleMulti;
