@@ -86,6 +86,9 @@
     .sep{border:none;border-top:1px solid var(--line);margin:16px 0}
     .result-ready{color:var(--good)}
     .result-review{color:var(--warn)}
+    .submit-status{margin-top:10px;color:var(--muted);font-weight:700}
+    .submit-status.error{color:#ff9b9b}
+    .submit-status.good{color:var(--good)}
     @media (max-width:760px){
       .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
       .q-stem{font-size:18px}
@@ -742,6 +745,7 @@ function sameArray(a,b){
 
 let QUESTIONS = [];
 let state = { studentName:"", startedAt:null, current:0, answers:[], submitted:false, score:null, attemptNumber:1, questionOrderSeed:null };
+let submitInFlight = false;
 
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function load(){
@@ -894,6 +898,8 @@ function renderInputForQuestion(q, currentAnswer){
   }
   if(q.type === "partab"){
     const ans = currentAnswer || {partA:[], partB:[]};
+    const partAReady = Array.isArray(ans.partA) && ans.partA.length > 0;
+    const partBReady = Array.isArray(ans.partB) && ans.partB.length > 0;
     return `
       <div class="prompt-box"><strong>${escapeHtml(q.partA.stem)}</strong></div>
       <div class="choices">${q.partA.choices.map((choice, i) => `
@@ -904,7 +910,10 @@ function renderInputForQuestion(q, currentAnswer){
       <div class="choices">${q.partB.choices.map((choice, i) => `
         <button class="choice ${ans.partB.includes(i) ? "selected" : ""}" onclick="selectPart('B', [${i}])">
           <span class="choice-letter">${letter(i)}.</span> ${escapeHtml(choice)}
-        </button>`).join("")}</div>`;
+        </button>`).join("")}</div>
+      <div class="footer-actions">
+        <button onclick="submitPartAB()" ${(!partAReady || !partBReady) ? "disabled" : ""}>Submit Answer</button>
+      </div>`;
   }
   return `<div class="muted">Unsupported question type.</div>`;
 }
@@ -934,6 +943,26 @@ function selectPart(which, arr){
   if(which === 'B') current.partB = arr;
   state.answers[state.current] = current;
   save(); renderQuestion();
+}
+function submitPartAB(){
+  const ans = state.answers[state.current];
+  if(!ans || !Array.isArray(ans.partA) || !ans.partA.length || !Array.isArray(ans.partB) || !ans.partB.length){
+    alert("Answer both Part A and Part B before continuing.");
+    return;
+  }
+  nextQuestion();
+}
+function setSubmitStatus(message, kind=""){
+  const el = document.getElementById("submitStatus");
+  if(!el) return;
+  el.className = `submit-status${kind ? " " + kind : ""}`;
+  el.textContent = message || "";
+}
+function withTimeout(promise, ms){
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))
+  ]);
 }
 function prevQuestion(){ if(state.current > 0){ state.current--; save(); renderQuestion(); } }
 function skipQuestion(){ if(state.current < QUESTIONS.length - 1){ state.current++; save(); renderQuestion(); } else reviewScreen(); }
@@ -972,12 +1001,27 @@ function reviewScreen(){
       <hr class="sep">
       <div class="footer-actions">
         <button class="secondary" onclick="renderQuestion()">Back to Test</button>
-        <button onclick="submitTest()">Submit Segment</button>
+        <button id="submitSegmentBtn" onclick="submitTest()">Submit Segment</button>
       </div>
+      <div id="submitStatus" class="submit-status"></div>
     </div>`;
 }
 async function submitTest(){
-  if(state.submitted) return;
+  if(state.submitted || submitInFlight) return;
+
+  const unanswered = QUESTIONS.length - countAnswered();
+  if(unanswered > 0){
+    const proceed = confirm(`There ${unanswered === 1 ? "is" : "are"} still ${unanswered} unanswered question${unanswered === 1 ? "" : "s"}. Submit anyway?`);
+    if(!proceed) return;
+  }
+
+  submitInFlight = true;
+  const submitBtn = document.getElementById("submitSegmentBtn");
+  if(submitBtn){
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
+  }
+  setSubmitStatus("Submitting to the spreadsheet. Please wait...", "");
 
   const endedAt = new Date().toISOString();
   const score = QUESTIONS.reduce((sum, q, idx) => sum + (isCorrect(q, state.answers[idx]) ? 1 : 0), 0);
@@ -1012,20 +1056,33 @@ async function submitTest(){
   };
 
   try{
-    const res = await fetch(SCRIPT_URL, {
+    const res = await withTimeout(fetch(SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
-    });
-    const text = await res.text();
+    }), 20000);
+
+    if(!res || !res.ok){
+      throw new Error("bad_response");
+    }
+
+    const text = await withTimeout(res.text(), 10000);
     let parsed = {};
     try{ parsed = JSON.parse(text); }catch(err){}
     if(parsed && parsed.ok === false){
-      alert(parsed.message || "Submission failed.");
-      return;
+      throw new Error(parsed.message || "Submission failed.");
     }
   }catch(err){
-    alert("Submission did not reach the spreadsheet. Check the Apps Script URL and deployment settings, then try again.");
+    submitInFlight = false;
+    if(submitBtn){
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Segment";
+    }
+    if(err && err.message === "timeout"){
+      setSubmitStatus("The submission is taking too long. Check the Apps Script connection, then try again.", "error");
+      return;
+    }
+    setSubmitStatus("Submission did not reach the spreadsheet. Check the Apps Script URL and deployment settings, then try again.", "error");
     return;
   }
 
@@ -1035,6 +1092,7 @@ async function submitTest(){
   state.submitted = true;
   state.score = score;
   save();
+  submitInFlight = false;
 
   document.getElementById("app").innerHTML = `
     <a class="back-link" href="../index.html">← Back to Hub</a>
@@ -1052,13 +1110,11 @@ async function submitTest(){
         <div class="stat"><div class="stat-label">Accuracy</div><div class="stat-value">${accuracy}%</div></div>
         <div class="stat"><div class="stat-label">Result</div><div class="stat-value ${accuracy >= 80 ? "result-ready" : "result-review"}">${accuracy >= 80 ? "READY" : "REVIEW"}</div></div>
       </div>
-      <div class="footer-actions">
-        ${TEACHER_OVERRIDE ? `<button class="warn" onclick="teacherUnlockNow()">Teacher Unlock Again</button>` : ``}
-        <button onclick="location.href='../index.html'">Back to Hub</button>
+      <div class="submit-status good">Submission reached the spreadsheet successfully.</div>
+      <div class="footer-actions" style="margin-top:14px;">
+        <button onclick="location.href='../index.html'">Return to Hub</button>
       </div>
-    </div>
-  `;
-  localStorage.removeItem(STORAGE_KEY);
+    </div>`;
 }
 function tick(){
   const el = document.getElementById("runtimeDisplay");
